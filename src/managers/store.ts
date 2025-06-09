@@ -18,38 +18,38 @@ export const useSettingsStore = defineStore('settings', {
 
     getters: {
         isInitialized: (state): boolean => {
-    const visionProviders = state.settings.visionProviders;
-    const ttsProviders = state.settings.ttsProviders;
+            const visionProviders = state.settings.visionProviders;
+            const ttsProviders = state.settings.ttsProviders;
 
-    const visionApiKeySet = visionProviders.some(provider =>
-        provider.apiKey && provider.apiKey.trim() !== ''
-    );
-    const ttsApiKeySet = ttsProviders.some(provider =>
-        provider.apiKey && provider.apiKey.trim() !== ''
-    );
+            const visionApiKeySet = visionProviders.some(provider =>
+                provider.apiKey && provider.apiKey.trim() !== ''
+            );
+            const ttsApiKeySet = ttsProviders.some(provider =>
+                provider.apiKey && provider.apiKey.trim() !== ''
+            );
 
-    return visionApiKeySet && ttsApiKeySet;
-},
+            return visionApiKeySet && ttsApiKeySet;
+        },
     },
 
-actions: {
-    // add a reset settings action
-    resetSettings() {
-        this.setSettings(defaultSettings as Settings);
-        localStorage.removeItem('settings');
-    },
-    
-    setSettings(settings: Settings) {
-        this.settings = settings;
-    },
-
-    loadSettings() {
-        try {
-            const savedSettings = JSON.parse(localStorage.getItem('settings') || '');
-            this.setSettings(savedSettings);
-        } catch {
+    actions: {
+        // add a reset settings action
+        resetSettings() {
             this.setSettings(defaultSettings as Settings);
-        }
+        },
+
+        setSettings(settings: Settings) {
+            this.settings = settings;
+            localStorage.setItem('settings', JSON.stringify(settings));
+        },
+
+        loadSettings() {
+            try {
+                const savedSettings = JSON.parse(localStorage.getItem('settings') || '');
+                this.setSettings(savedSettings);
+            } catch {
+                this.setSettings(defaultSettings as Settings);
+            }
+        },
     },
-},
 });

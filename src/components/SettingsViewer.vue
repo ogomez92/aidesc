@@ -1,10 +1,12 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, nextTick, onUnmounted, watch } from 'vue';
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue';
 import { useSettingsStore } from '@managers/store';
-import { VisionModels, TtsModels } from '../enums/models';
 
 import { Settings, VisionProviderSettings, TTSProviderSettings } from '@interfaces/settings';
 import ToastMessage from './ToastMessage.vue';
+import AddVisionProviderModal from './AddVisionProviderModal.vue';
+import AddTTSProviderModal from './AddTTSProviderModal.vue';
+import ResetConfirmationModal from './ResetConfirmationModal.vue';
 
 const settingsStore = useSettingsStore();
 
@@ -18,25 +20,7 @@ const showVisionProviderModal = ref(false);
 const showTtsProviderModal = ref(false);
 const showResetConfirmModal = ref(false);
 
-// Template refs for auto-focus
-const firstVisionRadio = ref<HTMLInputElement | null>(null);
-const firstTtsRadio = ref<HTMLInputElement | null>(null);
-
-// Form data for new providers
-const newVisionProvider = ref({
-    name: '',
-    apiKey: '',
-    model: '',
-    maxTokens: 3000
-});
-
-const newTtsProvider = ref({
-    name: '',
-    apiKey: '',
-    speedFactor: 1.0,
-    model: '',
-    voice: ''
-});
+// Template refs for auto-focus (removed since components handle their own focus)
 
 // Computed arrays for table display
 const visionProvidersArray = computed((): VisionProviderSettings[] => {
@@ -48,52 +32,10 @@ const ttsProvidersArray = computed((): TTSProviderSettings[] => {
 });
 
 // Get available model names from enums
-const visionModelOptions = computed(() => Object.values(VisionModels));
-const ttsModelOptions = computed(() => Object.values(TtsModels));
-
 // Methods
-const addVisionProvider = () => {
-    if (newVisionProvider.value.name && newVisionProvider.value.model) {
-        localSettings.value.visionProviders.push({
-            name: newVisionProvider.value.name,
-            apiKey: newVisionProvider.value.apiKey,
-            model: newVisionProvider.value.model,
-            maxTokens: newVisionProvider.value.maxTokens
-        });
-
-        // Reset form
-        newVisionProvider.value = {
-            name: '',
-            apiKey: '',
-            model: '',
-            maxTokens: 3000
-        };
-
-        showVisionProviderModal.value = false;
-    }
-};
-
-const addTtsProvider = () => {
-    if (newTtsProvider.value.name && newTtsProvider.value.model) {
-        localSettings.value.ttsProviders.push({
-            name: newTtsProvider.value.name,
-            apiKey: newTtsProvider.value.apiKey,
-            model: newTtsProvider.value.model,
-            speedFactor: newTtsProvider.value.speedFactor,
-            voice: newTtsProvider.value.voice
-        });
-
-        // Reset form
-        newTtsProvider.value = {
-            name: '',
-            apiKey: '',
-            model: '',
-            speedFactor: 1.0,
-            voice: ''
-        };
-
-        showTtsProviderModal.value = false;
-    }
+const handleAddTtsProvider = (provider: { name: string; apiKey: string; model: string; speedFactor: number; voice: string }) => {
+    localSettings.value.ttsProviders.push(provider);
+    showTtsProviderModal.value = false;
 };
 
 const removeVisionProvider = (providerName: string) => {
@@ -116,7 +58,7 @@ const toastMessage = ref('');
 const toastType = ref<'warning' | 'info'>('info');
 
 const saveSettings = () => {
-    settingsStore.setSettings(localSettings as unknown as typeof settingsStore.settings);
+    settingsStore.setSettings(localSettings.value as Settings);
 
     // Show success toast
     toastMessage.value = 'Settings saved successfully!';
@@ -151,19 +93,23 @@ const resetSettings = () => {
     showToast.value = true;
 };
 
+const handleResetConfirmation = () => {
+    resetSettings();
+    showResetConfirmModal.value = false;
+};
+
 // Methods for modal handling
 const openVisionProviderModal = () => {
     showVisionProviderModal.value = true;
-    nextTick(() => {
-        firstVisionRadio.value?.focus();
-    });
+};
+
+const handleAddVisionProvider = (provider: { name: string; apiKey: string; model: string; maxTokens: number }) => {
+    localSettings.value.visionProviders.push(provider);
+    showVisionProviderModal.value = false;
 };
 
 const openTtsProviderModal = () => {
     showTtsProviderModal.value = true;
-    nextTick(() => {
-        firstTtsRadio.value?.focus();
-    });
 };
 
 const closeVisionProviderModal = () => {
@@ -273,7 +219,7 @@ onMounted(() => {
 
                     <div class="provider-controls">
                         <button type="button" @click="openVisionProviderModal" class="btn btn-primary"
-                            aria-label="Add new vision provider">
+                            aria-label="Add new vision provider" aria-haspopup="dialog">
                             Add Vision Provider
                         </button>
                     </div>
@@ -293,6 +239,7 @@ onMounted(() => {
                     </div>
 
                     <table class="providers-table" v-if="visionProvidersArray.length > 0">
+                    <caption>Vision Providers</caption>
                         <thead>
                             <tr>
                                 <th>Provider Name</th>
@@ -326,7 +273,7 @@ onMounted(() => {
 
                     <div class="provider-controls">
                         <button type="button" @click="openTtsProviderModal" class="btn btn-primary"
-                            aria-label="Add new TTS provider">
+                            aria-label="Add new TTS provider" aria-haspopup="dialog">
                             Add TTS Provider
                         </button>
                     </div>
@@ -345,6 +292,7 @@ onMounted(() => {
                     </div>
 
                     <table class="providers-table" v-if="ttsProvidersArray.length > 0">
+                        <caption>Tts providers</caption>
                         <thead>
                             <tr>
                                 <th>Provider Name</th>
@@ -420,125 +368,24 @@ onMounted(() => {
                     Reset Settings
                 </button>
             </div>
-        </form>
-
-        <!-- Reset Confirmation Modal -->
-        <div v-if="showResetConfirmModal" class="modal-overlay" @click.self="closeResetConfirmModal">
-            <div class="modal-content" role="dialog" aria-labelledby="reset-modal-title" aria-modal="true">
-                <h3 id="reset-modal-title" class="modal-title">Reset Settings</h3>
-                <p class="modal-text">
-                    Are you sure you want to reset all settings to their default values? This action cannot be undone.
-                </p>
-                <div class="modal-actions">
-                    <button type="button" @click="resetSettings" class="btn btn-danger">
-                        Yes, Reset
-                    </button>
-                    <button type="button" @click="closeResetConfirmModal" class="btn btn-secondary">
-                        Cancel
-                    </button>
-                </div>
-            </div>
-        </div>
+        </form>        <!-- Reset Confirmation Modal -->
+        <ResetConfirmationModal 
+            :is-visible="showResetConfirmModal"
+            @close="closeResetConfirmModal"
+            @confirm="handleResetConfirmation"
+        />
 
         <!-- Vision Provider Modal -->
-        <div v-if="showVisionProviderModal" class="modal-overlay" @click.self="closeVisionProviderModal">
-            <div class="modal-content" role="dialog" aria-labelledby="vision-modal-title" aria-modal="true">
-                <h3 id="vision-modal-title" class="modal-title">Add Vision Provider</h3>
-                <form @submit.prevent="addVisionProvider">
-                    <div class="form-group">
-                        <fieldset>
-                            <legend class="form-label">Provider Name</legend>
-                            <div class="radio-group">
-                                <label v-for="(option, index) in visionModelOptions" :key="option" class="radio-label">
-                                    <input :ref="index === 0 ? 'firstVisionRadio' : undefined"
-                                        v-model="newVisionProvider.name" :value="option.toLowerCase()" type="radio"
-                                        name="vision-provider-name" class="form-radio" required />
-                                    {{ option }}
-                                </label>
-                            </div>
-                        </fieldset>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="vision-apikey" class="form-label">API Key</label>
-                        <input aria-required id="vision-apikey" v-model="newVisionProvider.apiKey" type="password"
-                            class="form-input" placeholder="API key" />
-                    </div>
-
-                    <div class="form-group">
-                        <label for="vision-model" class="form-label">Model</label>
-                        <input id="vision-model" v-model="newVisionProvider.model" type="text" required
-                            class="form-input" placeholder="e.g., gpt-4o, gemini-2.0-flash" />
-                    </div>
-
-                    <div class="form-group">
-                        <label for="vision-tokens" class="form-label">Max Tokens</label>
-                        <input id="vision-tokens" v-model.number="newVisionProvider.maxTokens" type="number" min="1"
-                            class="form-input" />
-                    </div>
-
-                    <div class="modal-actions">
-                        <button type="submit" class="btn btn-primary">Add Provider</button>
-                        <button type="button" @click="closeVisionProviderModal" class="btn btn-secondary">
-                            Cancel
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
-
-        <!-- TTS Provider Modal -->
-        <div v-if="showTtsProviderModal" class="modal-overlay" @click.self="closeTtsProviderModal">
-            <div class="modal-content" role="dialog" aria-labelledby="tts-modal-title" aria-modal="true">
-                <h3 id="tts-modal-title" class="modal-title">Add TTS Provider</h3>
-                <form @submit.prevent="addTtsProvider">
-                    <div class="form-group">
-                        <fieldset>
-                            <legend class="form-label">Provider Name</legend>
-                            <div class="radio-group">
-                                <label v-for="(option, index) in ttsModelOptions" :key="option" class="radio-label">
-                                    <input :ref="index === 0 ? 'firstTtsRadio' : undefined"
-                                        v-model="newTtsProvider.name" :value="option.toLowerCase()" type="radio"
-                                        name="tts-provider-name" class="form-radio" required />
-                                    {{ option }}
-                                </label>
-                            </div>
-                        </fieldset>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="tts-speedfactor" class="form-label">Speed Factor</label>
-                        <input id="tts-speedfactor" v-model="newTtsProvider.speedFactor" class="form-input"
-                            placeholder="1.0" />
-                    </div>
-
-                    <div class="form-group">
-                        <label for="tts-apikey" class="form-label">API Key</label>
-                        <input aria-required id="tts-apikey" v-model="newTtsProvider.apiKey" type="password"
-                            class="form-input" placeholder="API key" />
-                    </div>
-
-                    <div class="form-group">
-                        <label for="tts-model" class="form-label">Model</label>
-                        <input id="tts-model" v-model="newTtsProvider.model" type="text" required class="form-input"
-                            placeholder="e.g., tts-1-hd, eleven_multilingual_v2" />
-                    </div>
-
-                    <div class="form-group">
-                        <label for="tts-voice" class="form-label">Voice</label>
-                        <input id="tts-voice" v-model="newTtsProvider.voice" type="text" class="form-input"
-                            placeholder="e.g., alloy, nova" />
-                    </div>
-
-                    <div class="modal-actions">
-                        <button type="submit" class="btn btn-primary">Add Provider</button>
-                        <button type="button" @click="closeTtsProviderModal" class="btn btn-secondary">
-                            Cancel
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
+        <AddVisionProviderModal 
+            :is-visible="showVisionProviderModal"
+            @close="closeVisionProviderModal"
+            @add-provider="handleAddVisionProvider"
+        />        <!-- TTS Provider Modal -->
+        <AddTTSProviderModal 
+            :is-visible="showTtsProviderModal"
+            @close="closeTtsProviderModal"
+            @add-provider="handleAddTtsProvider"
+        />
 
         <!-- Toast Message -->
         <ToastMessage v-if="showToast" :message="toastMessage" :type="toastType" :visible="showToast"
