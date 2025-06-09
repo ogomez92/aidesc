@@ -1,0 +1,17 @@
+the video loading screen should prompt to open a file and then display the prompt in a multiline so that it can be modified if you want.
+
+After successfully opening a video, or displaying an alert with an error if its not an mp4 file, it should get the duration with ffmpeg stuff and display it, then auto focus the prompt field with the default prompt in it.
+
+I've decided that settings will be in local storage. So we'll use this savedSettings for now, but before we go to prod, this needs to change.
+When the conversion ends, allow for the saving of the mix,  convert the thing with ffmpeg and get the video, and then don't forget to delete the temporary files, or even zip them up maybe and get all the temp files.
+
+I won't, but I'll probably do it a bit differently and render it including web audio. I'll let you move the description track around in 3d. I mix it in 3d because I find it much easier to understand both the video and the descriptions if they're not in the same stereo place.
+I'm adding a whole bunch more to the app. Like video playback and having the description read with your tts or web tts and so on. So you don't have to pay for a tts provider. And change all of the settings in a nice little interface.
+
+Add clipboard tts model
+add ARIA tts model
+generate description srts, to be able to load them and play with vidos. NO ned to cache processed descriptions then, just have user load srt.
+
+So, flow:
+Load videoLoad description or subtitle
+play

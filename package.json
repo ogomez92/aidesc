@@ -1,0 +1,62 @@
+{
+  "name": "aidesc",
+  "version": "28.1.0",
+  "main": "dist-electron/main/index.js",
+  "description": "Really simple Electron + Vue + Vite boilerplate.",
+  "author": "草鞋没号 <308487730@qq.com>",
+  "license": "MIT",
+  "private": true,
+  "keywords": [
+    "electron",
+    "rollup",
+    "vite",
+    "vue3",
+    "vue"
+  ],
+  "debug": {
+    "env": {
+      "VITE_DEV_SERVER_URL": "http://127.0.0.1:3344/"
+    }
+  },
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vue-tsc --noEmit && vite build && electron-builder",
+    "preview": "vite preview"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.22.0",
+    "@types/node": "^22.15.30",
+    "@vitejs/plugin-vue": "^5.0.4",
+    "electron": "^35.0.1",
+    "electron-builder": "^25.1.8",
+    "eslint": "^9.22.0",
+    "eslint-import-resolver-typescript": "^3.9.0",
+    "eslint-plugin-import": "^2.31.0",
+    "eslint-plugin-vue": "^10.0.0",
+    "globals": "^16.0.0",
+    "typescript": "^5.4.2",
+    "typescript-eslint": "^8.26.1",
+    "vite": "^6.2.2",
+    "vite-plugin-electron": "^0.29.0",
+    "vite-plugin-electron-renderer": "^0.14.5",
+    "vue": "^3.4.21",
+    "vue-i18n": "^11.1.2",
+    "vue-tsc": "^2.0.6"
+  },
+  "dependencies": {
+    "@ffmpeg/ffmpeg": "^0.12.15",
+    "@google/generative-ai": "^0.24.0",
+    "axios": "^1.6.2",
+    "dotenv": "^16.3.1",
+    "elevenlabs": "^1.54.0",
+    "fluent-ffmpeg": "^2.1.2",
+    "openai": "^4.20.1",
+    "pinia": "^3.0.3",
+    "vuex": "^4.0.2",
+    "yargs": "^17.7.2"
+  },
+  "engines": {
+    "node": ">=14.0.0"
+  }
+}
