@@ -33,6 +33,12 @@ export const useSettingsStore = defineStore('settings', {
     },
 
 actions: {
+    // add a reset settings action
+    resetSettings() {
+        this.setSettings(defaultSettings as Settings);
+        localStorage.removeItem('settings');
+    },
+    
     setSettings(settings: Settings) {
         this.settings = settings;
     },

@@ -33,6 +33,7 @@ const newVisionProvider = ref({
 const newTtsProvider = ref({
     name: '',
     apiKey: '',
+    speedFactor: 1.0,
     model: '',
     voice: ''
 });
@@ -78,6 +79,7 @@ const addTtsProvider = () => {
             name: newTtsProvider.value.name,
             apiKey: newTtsProvider.value.apiKey,
             model: newTtsProvider.value.model,
+            speedFactor: newTtsProvider.value.speedFactor,
             voice: newTtsProvider.value.voice
         });
 
@@ -86,6 +88,7 @@ const addTtsProvider = () => {
             name: '',
             apiKey: '',
             model: '',
+            speedFactor: 1.0,
             voice: ''
         };
 
@@ -114,7 +117,7 @@ const toastType = ref<'warning' | 'info'>('info');
 
 const saveSettings = () => {
     settingsStore.setSettings(localSettings as unknown as typeof settingsStore.settings);
-    
+
     // Show success toast
     toastMessage.value = 'Settings saved successfully!';
     toastType.value = 'info';
@@ -125,19 +128,27 @@ const exportSettings = async () => {
     try {
         const settingsJson = JSON.stringify(localSettings.value, null, 2);
         await navigator.clipboard.writeText(settingsJson);
-        
+
         // Show success toast
         toastMessage.value = 'Settings exported to clipboard!';
         toastType.value = 'info';
         showToast.value = true;
     } catch (error) {
         console.error('Failed to export settings:', error);
-        
+
         // Show error toast
         toastMessage.value = 'Failed to export settings to clipboard';
         toastType.value = 'warning';
         showToast.value = true;
     }
+};
+
+const resetSettings = () => {
+    settingsStore.resetSettings();
+
+    toastMessage.value = 'Settings reset to default values';
+    toastType.value = 'info';
+    showToast.value = true;
 };
 
 // Methods for modal handling
@@ -296,7 +307,7 @@ onMounted(() => {
                                 <td>{{ provider.name }}</td>
                                 <td>{{ provider.model }}</td>
                                 <td>{{ provider.maxTokens }}</td>
-                                <td>{{ provider.apiKey ? '••••••••' : 'Not set' }}</td>
+                                <td>{{ provider.apiKey }}</td>
                                 <td>
                                     <button type="button" @click="removeVisionProvider(provider.name)"
                                         class="btn btn-danger btn-sm"
@@ -333,21 +344,13 @@ onMounted(() => {
                         </small>
                     </div>
 
-                    <div class="form-group">
-                        <label for="ttsSpeedFactor" class="form-label">TTS Speed Factor</label>
-                        <input id="ttsSpeedFactor" v-model.number="localSettings.ttsSpeedFactor" type="number" min="0.1"
-                            max="3" step="0.1" class="form-input" aria-describedby="ttsSpeedFactor-desc" />
-                        <small id="ttsSpeedFactor-desc" class="form-description">
-                            Speed multiplier for TTS playback (0.1-3.0)
-                        </small>
-                    </div>
-
                     <table class="providers-table" v-if="ttsProvidersArray.length > 0">
                         <thead>
                             <tr>
                                 <th>Provider Name</th>
                                 <th>Model</th>
                                 <th>Voice</th>
+                                <th>Speed Factor</th>
                                 <th>API Key</th>
                                 <th>Actions</th>
                             </tr>
@@ -357,7 +360,8 @@ onMounted(() => {
                                 <td>{{ provider.name }}</td>
                                 <td>{{ provider.model }}</td>
                                 <td>{{ provider.voice }}</td>
-                                <td>{{ provider.apiKey ? '••••••••' : 'Not set' }}</td>
+                                <td>{{ provider.speedFactor }}</td>
+                                <td>{{ provider.apiKey }}</td>
                                 <td>
                                     <button type="button" @click="removeTtsProvider(provider.name)"
                                         class="btn btn-danger btn-sm"
@@ -412,8 +416,29 @@ onMounted(() => {
                 <button type="button" @click="exportSettings" class="btn btn-secondary">
                     Export Settings
                 </button>
+                <button type="button" @click="showResetConfirmModal = true" class="btn btn-danger">
+                    Reset Settings
+                </button>
             </div>
         </form>
+
+        <!-- Reset Confirmation Modal -->
+        <div v-if="showResetConfirmModal" class="modal-overlay" @click.self="closeResetConfirmModal">
+            <div class="modal-content" role="dialog" aria-labelledby="reset-modal-title" aria-modal="true">
+                <h3 id="reset-modal-title" class="modal-title">Reset Settings</h3>
+                <p class="modal-text">
+                    Are you sure you want to reset all settings to their default values? This action cannot be undone.
+                </p>
+                <div class="modal-actions">
+                    <button type="button" @click="resetSettings" class="btn btn-danger">
+                        Yes, Reset
+                    </button>
+                    <button type="button" @click="closeResetConfirmModal" class="btn btn-secondary">
+                        Cancel
+                    </button>
+                </div>
+            </div>
+        </div>
 
         <!-- Vision Provider Modal -->
         <div v-if="showVisionProviderModal" class="modal-overlay" @click.self="closeVisionProviderModal">
@@ -436,8 +461,8 @@ onMounted(() => {
 
                     <div class="form-group">
                         <label for="vision-apikey" class="form-label">API Key</label>
-                        <input id="vision-apikey" v-model="newVisionProvider.apiKey" type="password" class="form-input"
-                            placeholder="Optional API key" />
+                        <input aria-required id="vision-apikey" v-model="newVisionProvider.apiKey" type="password"
+                            class="form-input" placeholder="API key" />
                     </div>
 
                     <div class="form-group">
@@ -482,9 +507,15 @@ onMounted(() => {
                     </div>
 
                     <div class="form-group">
+                        <label for="tts-speedfactor" class="form-label">Speed Factor</label>
+                        <input id="tts-speedfactor" v-model="newTtsProvider.speedFactor" class="form-input"
+                            placeholder="1.0" />
+                    </div>
+
+                    <div class="form-group">
                         <label for="tts-apikey" class="form-label">API Key</label>
-                        <input id="tts-apikey" v-model="newTtsProvider.apiKey" type="password" class="form-input"
-                            placeholder="Optional API key" />
+                        <input aria-required id="tts-apikey" v-model="newTtsProvider.apiKey" type="password"
+                            class="form-input" placeholder="API key" />
                     </div>
 
                     <div class="form-group">
@@ -510,13 +541,8 @@ onMounted(() => {
         </div>
 
         <!-- Toast Message -->
-        <ToastMessage
-            v-if="showToast"
-            :message="toastMessage"
-            :type="toastType"
-            :visible="showToast"
-            @dismiss="dismissToast"
-        />
+        <ToastMessage v-if="showToast" :message="toastMessage" :type="toastType" :visible="showToast"
+            @dismiss="dismissToast" />
     </div>
 </template>
 

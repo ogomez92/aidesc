@@ -1,5 +1,4 @@
 {
-  "captureIntervalSeconds": 1,
   "contextWindowSize": 5,
   "defaultPrompt": "Describe what you see in this image in 1-2 sentences for someone who cannot see it.",
   "changePrompt": "Describe what has changed between these frames in 1-2 sentences for someone who cannot see the video. Focus on significant visual changes only. Avoid talking about meta information such as 'in this frame', or 'the significant change is', and merely describe the actual change taking place. Only describe the changes relevant to the last frame. The previous frames are attached for you to build context and build situational awareness. Keep it short and concise, as your text will be used to generate audio description tracks to be played with the video. Describe in spanish (Spain) only.",
@@ -8,7 +7,6 @@
   "visionProviders": [],
   "ttsProvider": "",
   "ttsProviders": [],
-  "ttsSpeedFactor": 1.0,
   "batchWindowDuration": 8,
   "framesInBatch": 10
 }

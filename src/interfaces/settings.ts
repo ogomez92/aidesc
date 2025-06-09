@@ -10,10 +10,10 @@ export interface TTSProviderSettings {
     apiKey?: string | undefined;
     model: string;
     voice: string;
+    speedFactor: number;
 }
 
 export interface Settings {
-    captureIntervalSeconds: number;
     contextWindowSize: number;
     defaultPrompt: string;
     changePrompt: string;
@@ -22,7 +22,6 @@ export interface Settings {
     ttsProvider: string;
     visionProviders: Array<VisionProviderSettings>;
     ttsProviders: Array<TTSProviderSettings>;
-    ttsSpeedFactor: number;
     batchWindowDuration: number;
     framesInBatch: number;
 }
