@@ -121,6 +121,25 @@ const saveSettings = () => {
     showToast.value = true;
 };
 
+const exportSettings = async () => {
+    try {
+        const settingsJson = JSON.stringify(localSettings.value, null, 2);
+        await navigator.clipboard.writeText(settingsJson);
+        
+        // Show success toast
+        toastMessage.value = 'Settings exported to clipboard!';
+        toastType.value = 'info';
+        showToast.value = true;
+    } catch (error) {
+        console.error('Failed to export settings:', error);
+        
+        // Show error toast
+        toastMessage.value = 'Failed to export settings to clipboard';
+        toastType.value = 'warning';
+        showToast.value = true;
+    }
+};
+
 // Methods for modal handling
 const openVisionProviderModal = () => {
     showVisionProviderModal.value = true;
@@ -389,6 +408,9 @@ onMounted(() => {
             <div class="form-actions">
                 <button type="submit" class="btn btn-success">
                     Save Settings
+                </button>
+                <button type="button" @click="exportSettings" class="btn btn-secondary">
+                    Export Settings
                 </button>
             </div>
         </form>
