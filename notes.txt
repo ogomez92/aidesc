@@ -15,3 +15,5 @@ generate description srts, to be able to load them and play with vidos. NO ned t
 So, flow:
 Load videoLoad description or subtitle
 play
+
+new tab: webcam
