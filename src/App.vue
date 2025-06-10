@@ -3,9 +3,17 @@ import { computed, onMounted } from 'vue';
 import { useSettingsStore } from './managers/store';
 import OnboardingComponent from '@components/OnboardingComponent.vue';
 import SettingsViewer from '@components/SettingsViewer.vue';
+import Tabs from '@components/Tabs.vue'; // Added import
+import ProcessVideo from '@components/ProcessVideo.vue'; // Added import
 
 const settingsStore = useSettingsStore();
 const showOnboarding = computed(() => !settingsStore.isInitialized);
+
+// Tab configuration
+const tabs = [
+  { title: 'Process Local Video', component: ProcessVideo },
+  { title: 'Settings', component: SettingsViewer },
+];
 
 onMounted(() => {
     settingsStore.loadSettings();
@@ -17,7 +25,6 @@ onMounted(() => {
         <OnboardingComponent />
     </div>
     <div v-else>
-        <p>No onboarding</p>
+        <Tabs :tabs="tabs" />
     </div>
-    <SettingsViewer />
 </template>
