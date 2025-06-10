@@ -1,91 +1,90 @@
         <script setup lang="ts">
-import { ref, nextTick, watch } from 'vue';
-import { TtsModels } from '../enums/models';
+        import { ref, nextTick, watch } from 'vue';
+        import { TtsModels } from '../enums/models';
 
-// Props
-interface Props {
-  isVisible: boolean;
-}
+        // Props
+        interface Props {
+          isVisible: boolean;
+        }
 
-const props = defineProps<Props>();
+        const props = defineProps<Props>();
 
-// Emits
-interface Emits {
-  (e: 'close'): void;
-  (e: 'add-provider', provider: {
-    name: string;
-    apiKey: string;
-    model: string;
-    speedFactor: number;
-    voice: string;
-  }): void;
-}
+        // Emits
+        interface Emits {
+          (e: 'close'): void;
+          (e: 'add-provider', provider: {
+            name: string;
+            apiKey: string;
+            model: string;
+            speedFactor: number;
+            voice: string;
+          }): void;
+        }
 
-const emit = defineEmits<Emits>();
+        const emit = defineEmits<Emits>();
 
-// Template ref for auto-focus
-const firstTtsRadio = ref<HTMLInputElement | null>(null);
+        // Template ref for auto-focus
+        const dialogPanel = ref<HTMLDivElement | null>(null);
 
-// Form data
-const newTtsProvider = ref({
-  name: '',
-  apiKey: '',
-  speedFactor: 1.0,
-  model: '',
-  voice: ''
-});
+        // Form data
+        const newTtsProvider = ref({
+          name: '',
+          apiKey: '',
+          speedFactor: 1.0,
+          model: '',
+          voice: ''
+        });
 
-// Get available model names from enums
-const ttsModelOptions = Object.values(TtsModels);
+        // Get available model names from enums
+        const ttsModelOptions = Object.values(TtsModels);
 
-// Methods
-const addTtsProvider = () => {
-  if (newTtsProvider.value.name && newTtsProvider.value.model) {
-    emit('add-provider', { ...newTtsProvider.value });
-    
-    // Reset form
-    newTtsProvider.value = {
-      name: '',
-      apiKey: '',
-      speedFactor: 1.0,
-      model: '',
-      voice: ''
-    };
-  }
-};
+        // Methods
+        const addTtsProvider = () => {
+          if (newTtsProvider.value.name && newTtsProvider.value.model) {
+            emit('add-provider', { ...newTtsProvider.value });
 
-const closeModal = () => {
-  emit('close');
-};
+            // Reset form
+            newTtsProvider.value = {
+              name: '',
+              apiKey: '',
+              speedFactor: 1.0,
+              model: '',
+              voice: ''
+            };
+          }
+        };
 
-// Focus first radio button when modal opens
-const focusFirstRadio = () => {
-  nextTick(() => {
-    firstTtsRadio.value?.focus();
-  });
-};
+        const closeModal = () => {
+          emit('close');
+        };
 
-// Watch for visibility changes to focus
-watch(() => props.isVisible, (visible) => {
-  if (visible) {
-    focusFirstRadio();
-  }
-});
+        const focusDialogPanel = () => {
+          nextTick(() => {
+            dialogPanel.value?.focus();
+          });
+        };
+
+        // Watch for visibility changes to focus
+        watch(() => props.isVisible, (visible) => {
+          if (visible) {
+            focusDialogPanel();
+          }
+        });
 </script>
 
 <template>
   <div v-if="isVisible" class="modal-overlay" @click.self="closeModal">
-    <div class="modal-content" role="dialog" aria-labelledby="tts-modal-title" aria-modal="true">
+    <div tabindex="-1" ref="dialogPanel" class="modal-content" role="dialog" aria-labelledby="tts-modal-title"
+      aria-modal="true">
       <h3 id="tts-modal-title" class="modal-title">Add TTS Provider</h3>
       <form @submit.prevent="addTtsProvider">
         <div class="form-group">
           <fieldset>
             <legend class="form-label">Provider Name</legend>
             <div class="radio-group">
-              <label v-for="(option, index) in ttsModelOptions" :key="option" class="radio-label">
-                <input :ref="index === 0 ? 'firstTtsRadio' : undefined"
-                  v-model="newTtsProvider.name" :value="option.toLowerCase()" type="radio"
-                  name="tts-provider-name" class="form-radio" required />
+              <label v-for="(option) in ttsModelOptions" :key="option" class="radio-label">
+                <input v-model="newTtsProvider.name" :value="option.toLowerCase()" type="radio" name="tts-provider-name"
+                  class="form-radio" required />
                 {{ option }}
               </label>
             </div>
@@ -94,14 +93,14 @@ watch(() => props.isVisible, (visible) => {
 
         <div class="form-group">
           <label for="tts-speedfactor" class="form-label">Speed Factor</label>
-          <input id="tts-speedfactor" v-model.number="newTtsProvider.speedFactor" type="number" 
-            step="0.1" min="0.1" max="3.0" class="form-input" placeholder="1.0" />
+          <input id="tts-speedfactor" v-model.number="newTtsProvider.speedFactor" type="number" step="0.1" min="0.1"
+            max="3.0" class="form-input" placeholder="1.0" />
         </div>
 
         <div class="form-group">
           <label for="tts-apikey" class="form-label">API Key</label>
-          <input aria-required id="tts-apikey" v-model="newTtsProvider.apiKey" type="password"
-            class="form-input" placeholder="API key" />
+          <input aria-required id="tts-apikey" v-model="newTtsProvider.apiKey" type="password" class="form-input"
+            placeholder="API key" />
         </div>
 
         <div class="form-group">

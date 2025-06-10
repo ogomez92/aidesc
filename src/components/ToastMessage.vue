@@ -1,25 +1,15 @@
 <template>
   <Transition name="toast">
-    <div
-      v-if="isVisible && visible"
-      :class="['toast', `toast--${type}`]"
-      :role="type === 'warning' ? 'alert' : undefined"
-      :aria-live="type === 'info' ? 'polite' : undefined"
-    >
+    <div v-if="isVisible && visible" :class="['toast', `toast--${type}`]">
       <div class="toast__content">
         <div class="toast__icon">
           <span v-if="type === 'warning'">⚠️</span>
           <span v-else>ℹ️</span>
         </div>
-        <div class="toast__message">
+        <div class="toast__message" :role="type === 'warning' ? 'alert' : status" aria-atomic="true">
           {{ message }}
         </div>
-        <button
-          type="button"
-          class="toast__close"
-          @click="dismiss"
-          aria-label="Dismiss notification"
-        >
+        <button type="button" class="toast__close" @click="dismiss" aria-label="Dismiss notification">
           ✕
         </button>
       </div>

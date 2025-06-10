@@ -1,6 +1,5 @@
-
 <script setup lang="ts">
-import { ref, nextTick, watch } from 'vue';
+import { ref, watch, nextTick } from 'vue';
 import { VisionModels } from '../enums/models';
 
 // Props
@@ -24,7 +23,7 @@ interface Emits {
 const emit = defineEmits<Emits>();
 
 // Template ref for auto-focus
-const firstVisionRadio = ref<HTMLInputElement | null>(null);
+const dialogPanel = ref<HTMLDivElement | null>(null);
 
 // Form data
 const newVisionProvider = ref({
@@ -41,7 +40,7 @@ const visionModelOptions = Object.values(VisionModels);
 const addVisionProvider = () => {
   if (newVisionProvider.value.name && newVisionProvider.value.model) {
     emit('add-provider', { ...newVisionProvider.value });
-    
+
     // Reset form
     newVisionProvider.value = {
       name: '',
@@ -57,32 +56,35 @@ const closeModal = () => {
 };
 
 // Focus first radio button when modal opens
-const focusFirstRadio = () => {
-  nextTick(() => {
-    firstVisionRadio.value?.focus();
-  });
+const focusDialogPanel = () => {
+  dialogPanel.value.focus();
+  console.log(dialogPanel.value);
 };
 
 // Watch for visibility changes to focus
-watch(() => props.isVisible, (visible) => {
+watch(() => props.isVisible, async (visible) => {
+  await nextTick();
   if (visible) {
-    focusFirstRadio();
+    focusDialogPanel();
   }
 });
+
+
 </script>
+
 
 <template>
   <div v-if="isVisible" class="modal-overlay" @click.self="closeModal">
-    <div class="modal-content" role="dialog" aria-labelledby="vision-modal-title" aria-modal="true">
+    <div tabindex="-1" ref="dialogPanel" class="modal-content" role="dialog" aria-labelledby="vision-modal-title"
+      aria-modal="true">
       <h3 id="vision-modal-title" class="modal-title">Add Vision Provider</h3>
       <form @submit.prevent="addVisionProvider">
         <div class="form-group">
           <fieldset>
             <legend class="form-label">Provider Name</legend>
             <div class="radio-group">
-              <label v-for="(option, index) in visionModelOptions" :key="option" class="radio-label">
-                <input :ref="index === 0 ? 'firstVisionRadio' : undefined"
-                  v-model="newVisionProvider.name" :value="option.toLowerCase()" type="radio"
+              <label v-for="(option) in visionModelOptions" :key="option" class="radio-label">
+                <input v-model="newVisionProvider.name" :value="option.toLowerCase()" type="radio"
                   name="vision-provider-name" class="form-radio" required />
                 {{ option }}
               </label>
@@ -92,14 +94,14 @@ watch(() => props.isVisible, (visible) => {
 
         <div class="form-group">
           <label for="vision-apikey" class="form-label">API Key</label>
-          <input aria-required id="vision-apikey" v-model="newVisionProvider.apiKey" type="password"
-            class="form-input" placeholder="API key" />
+          <input aria-required id="vision-apikey" v-model="newVisionProvider.apiKey" type="password" class="form-input"
+            placeholder="API key" />
         </div>
 
         <div class="form-group">
           <label for="vision-model" class="form-label">Model</label>
-          <input id="vision-model" v-model="newVisionProvider.model" type="text" required
-            class="form-input" placeholder="e.g., gpt-4o, gemini-2.0-flash" />
+          <input id="vision-model" v-model="newVisionProvider.model" type="text" required class="form-input"
+            placeholder="e.g., gpt-4o, gemini-2.0-flash" />
         </div>
 
         <div class="form-group">
@@ -269,4 +271,3 @@ legend {
   }
 }
 </style>
-        

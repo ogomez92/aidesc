@@ -10,7 +10,6 @@ import ResetConfirmationModal from './ResetConfirmationModal.vue';
 
 const settingsStore = useSettingsStore();
 
-// Create a reactive local settings object with proper typing
 const localSettings = ref<Settings>({
     ...settingsStore.settings
 });
