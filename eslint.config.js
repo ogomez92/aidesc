@@ -39,11 +39,20 @@ export default [
     },
   },
   {
-    files: ["**/*.{ts,tsx}"],
+    files: ["src/**/*.{ts,tsx}"],
     languageOptions: {
       parser: tseslint.parser,
       parserOptions: {
         project: './tsconfig.json',
+      },
+    },
+  },
+  {
+    files: ["electron/**/*.{ts,tsx}", "vite.config.ts"],
+    languageOptions: {
+      parser: tseslint.parser,
+      parserOptions: {
+        project: './tsconfig.node.json',
       },
     },
   },

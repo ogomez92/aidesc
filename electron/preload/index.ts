@@ -9,8 +9,7 @@ contextBridge.exposeInMainWorld('ipcRenderer', {
   off(...args: Parameters<typeof ipcRenderer.off>) {
     const [channel, ...omit] = args
     return ipcRenderer.off(channel, ...omit)
-  },
-  send(...args: Parameters<typeof ipcRenderer.send>) {
+  },  send(...args: Parameters<typeof ipcRenderer.send>) {
     const [channel, ...omit] = args
     return ipcRenderer.send(channel, ...omit)
   },
@@ -18,6 +17,10 @@ contextBridge.exposeInMainWorld('ipcRenderer', {
     const [channel, ...omit] = args
     return ipcRenderer.invoke(channel, ...omit)
   },
+
+  // Dialog APIs
+  openFileDialog: () => ipcRenderer.invoke('dialog:openFile'),
+  saveFileDialog: (defaultPath?: string) => ipcRenderer.invoke('dialog:saveFile', defaultPath),
 
   // You can expose other APTs you need here.
   // ...
@@ -112,7 +115,9 @@ const { appendLoading, removeLoading } = useLoading()
 domReady().then(appendLoading)
 
 window.onmessage = (ev) => {
-  ev.data.payload === 'removeLoading' && removeLoading()
+  if (ev.data.payload === 'removeLoading') {
+    removeLoading()
+  }
 }
 
 setTimeout(removeLoading, 4999)

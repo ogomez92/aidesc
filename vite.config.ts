@@ -18,7 +18,6 @@ export default defineConfig(({ command }) => {
       vue(),
       electron({
         main: {
-          // Shortcut of `build.lib.entry`
           entry: 'electron/main/index.ts',
           onstart({ startup }) {
             if (process.env.VSCODE_DEBUG) {
@@ -33,22 +32,16 @@ export default defineConfig(({ command }) => {
               minify: isBuild,
               outDir: 'dist-electron/main',
               rollupOptions: {
-                // Some third-party Node.js libraries may not be built correctly by Vite, especially `C/C++` addons, 
-                // we can use `external` to exclude them to ensure they work correctly.
-                // Others need to put them in `dependencies` to ensure they are collected into `app.asar` after the app is built.
-                // Of course, this is not absolute, just this way is relatively simple. :)
                 external: Object.keys('dependencies' in pkg ? pkg.dependencies : {}),
               },
             },
           },
         },
         preload: {
-          // Shortcut of `build.rollupOptions.input`.
-          // Preload scripts may contain Web assets, so use the `build.rollupOptions.input` instead `build.lib.entry`.
           input: 'electron/preload/index.ts',
           vite: {
             build: {
-              sourcemap: sourcemap ? 'inline' : undefined, // #332
+              sourcemap: sourcemap ? 'inline' : undefined,
               minify: isBuild,
               outDir: 'dist-electron/preload',
               rollupOptions: {
@@ -57,9 +50,6 @@ export default defineConfig(({ command }) => {
             },
           },
         },
-        // Ployfill the Electron and Node.js API for Renderer process.
-        // If you want use Node.js in Renderer process, the `nodeIntegration` needs to be enabled in the Main process.
-        // See 👉 https://github.com/electron-vite/vite-plugin-electron-renderer
         renderer: {},
       }),
     ],
@@ -68,17 +58,18 @@ export default defineConfig(({ command }) => {
       return {
         host: url.hostname,
         port: +url.port,
-      }
-    })(),
+      }    })(),
     clearScreen: false,
     resolve: {
       alias: {
         '@components': path.resolve(__dirname, 'src/components'),
         '@interfaces': path.resolve(__dirname, 'src/interfaces'),
+        '@services': path.resolve(__dirname, 'src/services'),
         '@enums': path.resolve(__dirname, 'src/enums'),
         '@helpers': path.resolve(__dirname, 'src/helpers'),
         '@managers': path.resolve(__dirname, 'src/managers'),
-        '@assets': path.resolve(__dirname, 'assets')
+        '@assets': path.resolve(__dirname, 'assets'),
+        '@': path.resolve(__dirname, 'src')
       },
     },
   }

@@ -5,6 +5,7 @@
       "@components/*": ["src/components/*"],
       "@assets/*": ["assets/*"],
       "@interfaces/*": ["src/interfaces/*"],
+      "@services/*": ["src/services/*"],
       "@managers/*": ["src/managers/*"],
       "@enums/*": ["src/enums/*"],
       "@helpers/*": ["src/helpers/*"]
