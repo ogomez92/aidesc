@@ -1,6 +1,6 @@
 import ffmpeg from 'fluent-ffmpeg';
 import { OpenAI } from 'openai';
-import { ElevenLabsClient } from 'elevenlabs';
+import { ElevenLabsClient } from '@elevenlabs/elevenlabs-js';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import * as fs from 'fs';
 import * as path from 'path';
@@ -171,7 +171,7 @@ export class OpenAIVisionProvider extends VisionProvider {
                 usage: { inputTokens: 0, outputTokens: 0, totalTokens: 0 }
             };
         }
-    }    async describeBatch(imagePaths: string[], lastBatchContext: BatchContext | null, prompt: string): Promise<VisionResult> {
+    } async describeBatch(imagePaths: string[], lastBatchContext: BatchContext | null, prompt: string): Promise<VisionResult> {
         try {
             const imagesBase64 = imagePaths.map(fp => {
                 const imageData = fs.readFileSync(fp);
@@ -186,13 +186,13 @@ export class OpenAIVisionProvider extends VisionProvider {
                     image_url?: { url: string };
                 }> | string;
             }> = [
-                {
-                    role: "user",
-                    content: [
-                        { type: "text", text: prompt }
-                    ]
-                }
-            ];
+                    {
+                        role: "user",
+                        content: [
+                            { type: "text", text: prompt }
+                        ]
+                    }
+                ];
 
             if (lastBatchContext?.lastDescription) {
                 messages.unshift({
@@ -382,7 +382,7 @@ export class OpenAITTSProvider extends TTSProvider {
 
     async textToSpeech(text: string, outputPath: string): Promise<TTSResult> {
         try {
-            const tempOutputPath = outputPath.replace(/\.\w+$/, '_temp$&');            const mp3 = await this.openai.audio.speech.create({
+            const tempOutputPath = outputPath.replace(/\.\w+$/, '_temp$&'); const mp3 = await this.openai.audio.speech.create({
                 model: this.config.model,
                 voice: this.config.voice as 'alloy' | 'echo' | 'fable' | 'onyx' | 'nova' | 'shimmer',
                 input: text
@@ -472,14 +472,14 @@ export class ElevenLabsTTSProvider extends TTSProvider {
             const tempOutputPath = outputPath.replace(/\.\w+$/, '_temp$&');
 
             const audio = await this.eleven.textToSpeech.convert(this.config.voice, {
-                enable_logging: false,
-                output_format: 'mp3_44100_128',
+                enableLogging: false,
+                outputFormat: 'mp3_44100_128',
                 text,
-                model_id: this.config.model,
+                modelId: this.config.model,
             });
 
             const fileStream = fs.createWriteStream(tempOutputPath);
-            audio.pipe(fileStream);            await new Promise<void>((resolve, reject) => {
+            audio.pipe(fileStream); await new Promise<void>((resolve, reject) => {
                 fileStream.on('finish', () => resolve());
                 fileStream.on('error', reject);
             });
@@ -617,7 +617,7 @@ export class VideoService {
 
     public static async combineAudioSegments(segments: AudioSegment[], outputPath: string, videoDuration: number, tempDir: string): Promise<string> {
         const silentBasePath = path.join(tempDir, 'silent_base.wav');
-        
+
         // Create silent base track
         await new Promise<void>((resolve, reject) => {
             ffmpeg()
@@ -707,9 +707,9 @@ export class VideoService {
     }
 
     public static async generateAudioDescription(
-        videoFilePath: string, 
-        settings: Settings, 
-        tempDir: string, 
+        videoFilePath: string,
+        settings: Settings,
+        tempDir: string,
         outputDir: string,
         onProgress?: (progress: number, message: string) => void
     ): Promise<ProcessingResult> {
@@ -759,7 +759,7 @@ export class VideoService {
         for (let batchIndex = 0; batchIndex < totalBatches; batchIndex++) {
             const batchStart = batchIndex * batchWindowDuration;
             const batchEnd = batchStart + batchWindowDuration;
-            
+
             if (batchEnd > videoDuration) break;
 
             onProgress?.(15 + (batchIndex / totalBatches) * 70, `Processing batch ${batchIndex + 1}/${totalBatches}`);
@@ -775,7 +775,7 @@ export class VideoService {
 
             // Get description from vision AI
             const visionResult = await vision.describeBatch(framePaths, lastBatchContext, settings.batchPrompt);
-            
+
             // Update stats
             stats.totalVisionInputCost += visionResult.usage.inputTokens;
             stats.totalVisionOutputCost += visionResult.usage.outputTokens;
@@ -784,7 +784,7 @@ export class VideoService {
             // Generate TTS
             const audioFilePath = path.join(tempDir, `batch_audio_${batchIndex}.mp3`);
             const ttsResult = await tts.textToSpeech(visionResult.description, audioFilePath);
-            
+
             stats.totalTTSCost += ttsResult.cost;
 
             // Store segment
@@ -826,33 +826,27 @@ export class VideoService {
     }
 
     public static async isFfmpegInstalled(): Promise<boolean> {
-        try {
-            // Check ffprobe
-            await new Promise((resolve, reject) => {
-                ffmpeg.ffprobe('-version', (err, data) => {
-                    if (err) {
-                        reject(err);
-                    } else {
-                        resolve(data);
-                    }
-                });
+        // Check ffprobe
+        await new Promise((resolve, reject) => {
+            ffmpeg.ffprobe('-version', (err, data) => {
+                if (err) {
+                    reject(err);
+                } else {
+                    resolve(data);
+                }
             });
+        });
 
-            // Check ffmpeg
-            await new Promise((resolve, reject) => {
-                ffmpeg.getAvailableFormats((err, formats) => {
-                    if (err) {
-                        reject(err);
-                    } else {
-                        resolve(formats);
-                    }
-                });
+        // Check ffmpeg
+        await new Promise((resolve, reject) => {
+            ffmpeg.getAvailableFormats((err) => {
+                if (err) {
+                    reject(err);
+                } else {
+                    resolve(true);
+                }
             });
-
-            return true;
-        } catch (error) {
-            console.error(`FFmpeg installation check failed: ${error}`);
-            return false;
-        }
+        });
+        return true;
     }
 }

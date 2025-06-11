@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue';
 import { useSettingsStore } from '@managers/store';
+import { VideoService } from '@services/video';
 
 import { Settings, VisionProviderSettings, TTSProviderSettings } from '@interfaces/settings';
 import ToastMessage from './ToastMessage.vue';
@@ -55,6 +56,24 @@ const removeTtsProvider = (providerName: string) => {
 const showToast = ref(false);
 const toastMessage = ref('');
 const toastType = ref<'warning' | 'info'>('info');
+
+const checkFfmpegInstallation = async () => {
+    try {
+        const installed = await VideoService.isFfmpegInstalled(); // Corrected static method call
+        if (installed) {
+            toastMessage.value = 'FFmpeg is installed correctly.';
+            toastType.value = 'info';
+        } else {
+            toastMessage.value = 'FFmpeg is not installed or not found in PATH.';
+            toastType.value = 'warning';
+        }
+    } catch (error) {
+        toastMessage.value = `Ffmpeg installation check error: ${error}`;
+        toastType.value = 'warning';
+
+    }
+    showToast.value = true;
+};
 
 const saveSettings = () => {
     settingsStore.setSettings(localSettings.value as Settings);
@@ -238,7 +257,7 @@ onMounted(() => {
                     </div>
 
                     <table class="providers-table" v-if="visionProvidersArray.length > 0">
-                    <caption>Vision Providers</caption>
+                        <caption>Vision Providers</caption>
                         <thead>
                             <tr>
                                 <th>Provider Name</th>
@@ -366,25 +385,19 @@ onMounted(() => {
                 <button type="button" @click="showResetConfirmModal = true" class="btn btn-danger">
                     Reset Settings
                 </button>
+                <button type="button" @click="checkFfmpegInstallation" class="btn btn-info">
+                    Check FFmpeg
+                </button>
             </div>
-        </form>        <!-- Reset Confirmation Modal -->
-        <ResetConfirmationModal 
-            :is-visible="showResetConfirmModal"
-            @close="closeResetConfirmModal"
-            @confirm="handleResetConfirmation"
-        />
+        </form> <!-- Reset Confirmation Modal -->
+        <ResetConfirmationModal :is-visible="showResetConfirmModal" @close="closeResetConfirmModal"
+            @confirm="handleResetConfirmation" />
 
         <!-- Vision Provider Modal -->
-        <AddVisionProviderModal 
-            :is-visible="showVisionProviderModal"
-            @close="closeVisionProviderModal"
-            @add-provider="handleAddVisionProvider"
-        />        <!-- TTS Provider Modal -->
-        <AddTTSProviderModal 
-            :is-visible="showTtsProviderModal"
-            @close="closeTtsProviderModal"
-            @add-provider="handleAddTtsProvider"
-        />
+        <AddVisionProviderModal :is-visible="showVisionProviderModal" @close="closeVisionProviderModal"
+            @add-provider="handleAddVisionProvider" /> <!-- TTS Provider Modal -->
+        <AddTTSProviderModal :is-visible="showTtsProviderModal" @close="closeTtsProviderModal"
+            @add-provider="handleAddTtsProvider" />
 
         <!-- Toast Message -->
         <ToastMessage v-if="showToast" :message="toastMessage" :type="toastType" :visible="showToast"
@@ -611,6 +624,17 @@ legend {
     background-color: #c0392b;
     transform: translateY(-2px);
     box-shadow: 0 4px 8px rgba(231, 76, 60, 0.3);
+}
+
+.btn-info {
+    background-color: #17a2b8;
+    color: white;
+}
+
+.btn-info:hover {
+    background-color: #138496;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(23, 162, 184, 0.3);
 }
 
 .btn-sm {
