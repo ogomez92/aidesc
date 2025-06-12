@@ -1,0 +1,78 @@
+import { spawn, ChildProcess } from 'child_process';
+import { EventEmitter } from 'events';
+
+export default class CliHelper extends EventEmitter {
+    private command: string;
+    private args: string[];
+    private process: ChildProcess | null = null;
+    private erroredViaProcessErrorEvent: boolean = false;
+
+    constructor(command: string, args: string[]) {
+        super();
+        this.command = command;
+        this.args = args;
+    }
+
+    public execute(): void {
+        if (this.process) {
+            // Optionally emit an error or throw if execute is called multiple times
+            // For now, we allow re-execution if the previous one finished.
+            if (this.process.exitCode === null && this.process.signalCode === null) {
+                this.emit('error', new Error('Process is already running.'));
+                return;
+            }
+        }
+
+        this.process = spawn(this.command, this.args);
+        this.erroredViaProcessErrorEvent = false;
+
+        this.process.on('error', (err) => {
+            this.erroredViaProcessErrorEvent = true;
+            console.error('error', new Error(`Failed to execute ${this.command}: ${err.message}`));
+            this.emit('error', new Error(`Failed to execute ${this.command}: ${err.message}`));
+        });
+
+        this.process.on('close', (code) => {
+            // Ensure 'close' isn't processed if 'error' event already handled the failure (e.g., ENOENT)
+            if (this.erroredViaProcessErrorEvent) {
+                this.process = null; // Reset process state
+                return;
+            }
+
+            if (code === 0) {
+                this.emit('success');
+            } else {
+                this.emit('error', new Error(`${this.command} exited with code ${code}`));
+            }
+            this.process = null; // Reset process state to allow potential re-execution
+        });
+
+        // Example: If you also want to stream stdout/stderr
+        this.process.stdout?.on('data', (data) => this.emit('stdout_data', data));
+        this.process.stderr?.on('data', (data) => this.emit('stderr_data', data));
+    }
+
+    // executeBlocking method which just errors out if there is ever an error and returns stderr, or if no error, return stdin.
+    public executeSync(): string {
+        if (this.process) {
+            throw new Error('Process is already running. Cannot execute blocking command.');
+        }
+
+        try {
+            const result = spawnSync(this.command, this.args, { encoding: 'utf8' });
+
+            if (result.error) {
+                throw result.error;
+            }
+
+            if (result.status !== 0) {
+                throw new Error(`${this.command} exited with code ${result.status}: ${result.stderr}`);
+            }
+
+            return result.stdout;
+        } catch (error) {
+            console.error(`Blocking execution error for command ${this.command}`, error);
+            throw error;
+        }
+    }
+}

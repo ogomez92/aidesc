@@ -5,6 +5,7 @@ import OnboardingComponent from '@components/OnboardingComponent.vue';
 import SettingsViewer from '@components/SettingsViewer.vue';
 import Tabs from '@components/Tabs.vue'; // Added import
 import ProcessVideo from '@components/ProcessVideo.vue'; // Added import
+import SystemStatus from '@components/SystemStatus.vue'
 
 const settingsStore = useSettingsStore();
 const showOnboarding = computed(() => !settingsStore.isInitialized);
@@ -14,6 +15,7 @@ const tabs = [
   { title: 'Process Local Video', component: ProcessVideo },
   { title: 'Settings', component: SettingsViewer },
 ];
+<SystemStatus>
 
 onMounted(() => {
     settingsStore.loadSettings();

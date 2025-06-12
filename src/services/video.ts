@@ -9,6 +9,8 @@ import BatchContext from '@interfaces/batch_context';
 import { VisionProviderFactory } from '@domain/vision_provider_factory';
 import { TTSProviderFactory } from '@domain/tts_provider_factory';
 import VisionResult from '@interfaces/vision_result';
+import CliHelper from '@helpers/cli';
+import DependencyCheckResult from '@interfaces/dependency_check_result';
 
 // Main VideoService class
 export class VideoService {
@@ -258,28 +260,35 @@ export class VideoService {
         };
     }
 
-    public static async isFfmpegInstalled(): Promise<boolean> {
-        // Check ffprobe
-        await new Promise((resolve, reject) => {
-            ffmpeg.ffprobe('-version', (err, data) => {
-                if (err) {
-                    reject(err);
-                } else {
-                    resolve(data);
-                }
-            });
-        });
+    public static async isFfmpegInstalled(): Promise<DependencyCheckResult> {
+        const cliHelper = new CliHelper('ffmpeg', ['--version']);
+        try {
+            const result: string = cliHelper.executeSync();
+            return {
+                status: true,
+                stdout: result,
+            };
+        } catch (error) {
+            return {
+                status: false,
+                stdout: error instanceof Error ? error.message : 'Unknown error',
+            };
+        }
+    }
 
-        // Check ffmpeg
-        await new Promise((resolve, reject) => {
-            ffmpeg.getAvailableFormats((err) => {
-                if (err) {
-                    reject(err);
-                } else {
-                    resolve(true);
-                }
-            });
-        });
-        return true;
+        public static async isFfprobeInstalled(): Promise<DependencyCheckResult> {
+        const cliHelper = new CliHelper('ffprobe', ['--version']);
+        try {
+            const result: string = cliHelper.executeSync();
+            return {
+                status: true,
+                stdout: result,
+            };
+        } catch (error) {
+            return {
+                status: false,
+                stdout: error instanceof Error ? error.message : 'Unknown error',
+            };
+        }
     }
 }
