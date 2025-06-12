@@ -25,3 +25,7 @@ we need to ensure that the last batch is also processed even if it is shorter.
 remember options enum? pull vision and tts provider from there using a factory
 the app checks for ffmpeg and ffproe in the path
 not download or include the binaries.
+continuous description mode where it uses tts or clipboard or whatever (not ARIA) to describe camera or shared screen with modifiable prompts.
+
+how about we remove prompts from settings, and add them to the video processing screen and add checkbox to save them for future use. also we need a new prompt for continuous video and since there is no batch, advise users to put a prompt like describe what option is selected, etc.
+in fact we could take most things away from settings and have them displayed in the video screen, like the batch window context etc and then in the processing video we can just add the relevant settings, then in continuous mode we do the same and add settings for that mode.
