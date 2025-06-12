@@ -1,6 +1,3 @@
-import ffmpeg from 'fluent-ffmpeg';
-import * as fs from 'fs';
-import * as path from 'path';
 import { Settings } from '../interfaces/settings';
 import ProcessingStats from '@interfaces/processing_stats';
 import ProcessingResult from '@interfaces/processing_result';
@@ -15,55 +12,63 @@ import DependencyCheckResult from '@interfaces/dependency_check_result';
 // Main VideoService class
 export class VideoService {
     public static async getDuration(filePath: string): Promise<number> {
+        // use cli helper to get the duration
+        const cliHelper = new CliHelper('ffprobe', ['-v', 'error', '-show_entries', 'format=duration', '-of', 'default=noprint_wrappers=1:nokey=1', filePath]);
         try {
-            return new Promise((resolve, reject) => {
-                ffmpeg.ffprobe(filePath, (err, metadata) => {
-                    if (err || !metadata || !metadata.format || !metadata.format.duration) {
-                        reject(new Error('Unable to get video duration'));
-                        return;
-                    }
-                    resolve(metadata.format.duration);
-                });
-            });
+            const result: string = cliHelper.executeSync();
+            return parseFloat(result.trim());
         } catch (error) {
-            console.error(`Error getting video duration: ${error}`);
-            throw error;
+            throw new Error(`Failed to get duration for file ${filePath}: ${error instanceof Error ? error.message : 'Unknown error'}`);
         }
     }
 
     public static async captureFrame(videoFilePath: string, timePosition: number, outputPath: string, lowQuality: boolean = true): Promise<void> {
+        const args: string[] = [
+            '-ss', timePosition.toString(),
+            '-i', videoFilePath,
+            '-frames:v', '1',
+            '-c:v', 'mjpeg',
+        ];
+
+        if (lowQuality) {
+            args.push('-vf', 'scale=-2:360'); // Scale to 360p height while maintaining aspect ratio, -2 ensures even width
+        }
+
+        args.push(outputPath);
+
+        const cliHelper = new CliHelper('ffmpeg', args);
+
         return new Promise((resolve, reject) => {
-            let command = ffmpeg(videoFilePath)
-                .seekInput(timePosition)
-                .frames(1)
-                .videoCodec('mjpeg')
-                .output(outputPath);
-
-            if (lowQuality) {
-                command = command.size('?x360'); // Scale to 360p height while maintaining aspect ratio
+            try {
+                cliHelper.executeSync(); // executeSync will throw on error
+                resolve();
+            } catch (error) {
+                reject(new Error(`Failed to capture frame for file ${videoFilePath} at ${timePosition}s: ${error instanceof Error ? error.message : 'Unknown error'}`));
             }
-
-            command
-                .on('end', () => resolve())
-                .on('error', (err) => reject(err))
-                .run();
         });
     }
 
     public static async combineAudioSegments(segments: AudioSegment[], outputPath: string, videoDuration: number, tempDir: string): Promise<string> {
+        const path = await import('path');
+        const fs = await import('fs');
         const silentBasePath = path.join(tempDir, 'silent_base.wav');
 
         // Create silent base track
         await new Promise<void>((resolve, reject) => {
-            ffmpeg()
-                .input('anullsrc=r=44100:cl=stereo')
-                .inputFormat('lavfi')
-                .duration(videoDuration)
-                .audioCodec('pcm_s16le')
-                .output(silentBasePath)
-                .on('end', () => resolve())
-                .on('error', (err) => reject(err))
-                .run();
+            const args = [
+                '-f', 'lavfi',
+                '-i', `anullsrc=r=44100:cl=stereo`,
+                '-t', videoDuration.toString(),
+                '-c:a', 'pcm_s16le',
+                silentBasePath
+            ];
+            try {
+                const cliHelper = new CliHelper('ffmpeg', args);
+                cliHelper.executeSync();
+                resolve();
+            } catch (error) {
+                reject(new Error(`Failed to create silent base track: ${error instanceof Error ? error.message : 'Unknown error'}`));
+            }
         });
 
         // Sort segments by start time
@@ -79,31 +84,41 @@ export class VideoService {
 
             // Standardize segment to WAV
             await new Promise<void>((resolve, reject) => {
-                ffmpeg(segment.audioFile)
-                    .audioFrequency(44100)
-                    .audioChannels(2)
-                    .audioCodec('pcm_s16le')
-                    .output(standardizedSegment)
-                    .on('end', () => resolve())
-                    .on('error', (err) => reject(err))
-                    .run();
+                const args = [
+                    '-i', segment.audioFile,
+                    '-ar', '44100',
+                    '-ac', '2',
+                    '-c:a', 'pcm_s16le',
+                    standardizedSegment
+                ];
+                try {
+                    const cliHelper = new CliHelper('ffmpeg', args);
+                    cliHelper.executeSync();
+                    resolve();
+                } catch (error) {
+                    reject(new Error(`Failed to standardize segment ${segment.audioFile}: ${error instanceof Error ? error.message : 'Unknown error'}`));
+                }
             });
 
             // Mix with current audio
             await new Promise<void>((resolve, reject) => {
-                ffmpeg()
-                    .input(currentAudioPath)
-                    .input(standardizedSegment)
-                    .complexFilter([
-                        `[1:a]adelay=${Math.round(segment.startTime * 1000)}|${Math.round(segment.startTime * 1000)}[delayed]`,
-                        `[0:a][delayed]amix=inputs=2:duration=first:dropout_transition=0:normalize=0[out]`
-                    ])
-                    .map('[out]')
-                    .audioCodec('pcm_s16le')
-                    .output(outputFile)
-                    .on('end', () => resolve())
-                    .on('error', (err) => reject(err))
-                    .run();
+                const delayMs = Math.round(segment.startTime * 1000);
+                const filterComplex = `[1:a]adelay=${delayMs}|${delayMs}[delayed];[0:a][delayed]amix=inputs=2:duration=first:dropout_transition=0:normalize=0[out]`;
+                const args = [
+                    '-i', currentAudioPath,
+                    '-i', standardizedSegment,
+                    '-filter_complex', filterComplex,
+                    '-map', '[out]',
+                    '-c:a', 'pcm_s16le',
+                    outputFile
+                ];
+                try {
+                    const cliHelper = new CliHelper('ffmpeg', args);
+                    cliHelper.executeSync();
+                    resolve();
+                } catch (error) {
+                    reject(new Error(`Failed to mix audio segment ${i}: ${error instanceof Error ? error.message : 'Unknown error'}`));
+                }
             });
 
             // Clean up
@@ -118,13 +133,19 @@ export class VideoService {
         // Convert to final format
         if (path.extname(outputPath).toLowerCase() === '.mp3') {
             await new Promise<void>((resolve, reject) => {
-                ffmpeg(currentAudioPath)
-                    .audioCodec('libmp3lame')
-                    .audioQuality(2)
-                    .output(outputPath)
-                    .on('end', () => resolve())
-                    .on('error', (err) => reject(err))
-                    .run();
+                const args = [
+                    '-i', currentAudioPath,
+                    '-c:a', 'libmp3lame',
+                    '-q:a', '2', // Corresponds to -audioQuality(2) for libmp3lame
+                    outputPath
+                ];
+                try {
+                    const cliHelper = new CliHelper('ffmpeg', args);
+                    cliHelper.executeSync();
+                    resolve();
+                } catch (error) {
+                    reject(new Error(`Failed to convert final audio to MP3: ${error instanceof Error ? error.message : 'Unknown error'}`));
+                }
             });
         } else {
             fs.copyFileSync(currentAudioPath, outputPath);
@@ -148,6 +169,9 @@ export class VideoService {
         outputDir: string,
         onProgress?: (progress: number, message: string) => void
     ): Promise<ProcessingResult> {
+        const fs = await import('fs');
+        const path = await import('path');
+
         // Ensure directories exist
         if (!fs.existsSync(tempDir)) {
             fs.mkdirSync(tempDir, { recursive: true });
@@ -261,7 +285,7 @@ export class VideoService {
     }
 
     public static async isFfmpegInstalled(): Promise<DependencyCheckResult> {
-        const cliHelper = new CliHelper('ffmpeg', ['--version']);
+        const cliHelper = new CliHelper('ffmpeg', ['-version']);
         try {
             const result: string = cliHelper.executeSync();
             return {
@@ -277,7 +301,7 @@ export class VideoService {
     }
 
         public static async isFfprobeInstalled(): Promise<DependencyCheckResult> {
-        const cliHelper = new CliHelper('ffprobe', ['--version']);
+        const cliHelper = new CliHelper('ffprobe', ['-version']);
         try {
             const result: string = cliHelper.executeSync();
             return {

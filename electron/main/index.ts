@@ -1,7 +1,6 @@
 import { app, BrowserWindow, shell, ipcMain, dialog } from 'electron'
 import { fileURLToPath } from 'node:url'
 import path from 'node:path'
-import os from 'node:os'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
@@ -34,7 +33,7 @@ async function createWindow() {
       preload,
       nodeIntegration: true,
 
-      // contextIsolation: false,
+      contextIsolation: false,
     },
   })
 

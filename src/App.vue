@@ -12,10 +12,9 @@ const showOnboarding = computed(() => !settingsStore.isInitialized);
 
 // Tab configuration
 const tabs = [
-  { title: 'Process Local Video', component: ProcessVideo },
-  { title: 'Settings', component: SettingsViewer },
+    { title: 'Full Video mode', component: ProcessVideo },
+    { title: 'Settings', component: SettingsViewer },
 ];
-<SystemStatus>
 
 onMounted(() => {
     settingsStore.loadSettings();
@@ -29,4 +28,5 @@ onMounted(() => {
     <div v-else>
         <Tabs :tabs="tabs" />
     </div>
+    <SystemStatus />
 </template>

@@ -1,6 +1,7 @@
-import { spawn, ChildProcess } from 'child_process';
+import type { ChildProcess } from 'child_process';
 import { EventEmitter } from 'events';
 
+const { spawn, spawnSync } = await import('child_process');
 export default class CliHelper extends EventEmitter {
     private command: string;
     private args: string[];
@@ -14,6 +15,7 @@ export default class CliHelper extends EventEmitter {
     }
 
     public execute(): void {
+        
         if (this.process) {
             // Optionally emit an error or throw if execute is called multiple times
             // For now, we allow re-execution if the previous one finished.
@@ -26,13 +28,13 @@ export default class CliHelper extends EventEmitter {
         this.process = spawn(this.command, this.args);
         this.erroredViaProcessErrorEvent = false;
 
-        this.process.on('error', (err) => {
+        this.process.on('error', (err: Error) => {
             this.erroredViaProcessErrorEvent = true;
             console.error('error', new Error(`Failed to execute ${this.command}: ${err.message}`));
             this.emit('error', new Error(`Failed to execute ${this.command}: ${err.message}`));
         });
 
-        this.process.on('close', (code) => {
+        this.process.on('close', (code: number) => {
             // Ensure 'close' isn't processed if 'error' event already handled the failure (e.g., ENOENT)
             if (this.erroredViaProcessErrorEvent) {
                 this.process = null; // Reset process state
@@ -48,8 +50,8 @@ export default class CliHelper extends EventEmitter {
         });
 
         // Example: If you also want to stream stdout/stderr
-        this.process.stdout?.on('data', (data) => this.emit('stdout_data', data));
-        this.process.stderr?.on('data', (data) => this.emit('stderr_data', data));
+        this.process.stdout?.on('data', (data: string) => this.emit('stdout_data', data));
+        this.process.stderr?.on('data', (data: string) => this.emit('stderr_data', data));
     }
 
     // executeBlocking method which just errors out if there is ever an error and returns stderr, or if no error, return stdin.

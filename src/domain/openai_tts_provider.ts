@@ -2,7 +2,6 @@ import OpenAI from "openai";
 import { TTSProvider } from "./tts_provider";
 import { TTSProviderSettings } from "@interfaces/settings";
 import TTSResult from "@interfaces/tts_result";
-import fs from 'fs';
 
 export class OpenAITTSProvider extends TTSProvider {
     private openai: OpenAI;
@@ -15,6 +14,7 @@ export class OpenAITTSProvider extends TTSProvider {
     }
 
     async textToSpeech(text: string, outputPath: string): Promise<TTSResult> {
+        const fs = await import('fs');
         try {
             const tempOutputPath = outputPath.replace(/\.\w+$/, '_temp$&'); const mp3 = await this.openai.audio.speech.create({
                 model: this.config.model,
