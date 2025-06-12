@@ -23,3 +23,5 @@ and display how many segments and usage statistics/cost it will need
 When generating segments it will do vision first, then audio, not vision/audio
 we need to ensure that the last batch is also processed even if it is shorter.
 remember options enum? pull vision and tts provider from there using a factory
+the app checks for ffmpeg and ffproe in the path
+not download or include the binaries.

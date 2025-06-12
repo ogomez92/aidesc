@@ -68,6 +68,7 @@ export default defineConfig(({ command }) => {
         '@enums': path.resolve(__dirname, 'src/enums'),
         '@helpers': path.resolve(__dirname, 'src/helpers'),
         '@managers': path.resolve(__dirname, 'src/managers'),
+        '@domain': path.resolve(__dirname, 'src/domain'),
         '@assets': path.resolve(__dirname, 'assets'),
         '@': path.resolve(__dirname, 'src')
       },

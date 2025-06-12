@@ -1,0 +1,164 @@
+export class OpenAIVisionProvider extends VisionProvider {
+    private openai: OpenAI;
+
+    constructor(config: VisionProviderSettings) {
+        super(config);
+        this.openai = new OpenAI({
+            apiKey: config.apiKey,
+        });
+    }
+
+    async describeImage(imagePath: string, prompt: string): Promise<VisionResult> {
+        try {
+            const imageData = fs.readFileSync(imagePath);
+            const base64Image = imageData.toString('base64');
+
+            const response = await this.openai.chat.completions.create({
+                model: this.config.model,
+                temperature: 1,
+                messages: [
+                    {
+                        role: "user",
+                        content: [
+                            { type: "text", text: prompt },
+                            {
+                                type: "image_url",
+                                image_url: {
+                                    url: `data:image/jpeg;base64,${base64Image}`
+                                }
+                            }
+                        ]
+                    }
+                ],
+                max_tokens: this.config.maxTokens || 300
+            });
+
+            return {
+                description: response.choices[0].message.content?.trim() || "Unable to describe this image.",
+                usage: {
+                    inputTokens: response.usage?.prompt_tokens || 0,
+                    outputTokens: response.usage?.completion_tokens || 0,
+                    totalTokens: response.usage?.total_tokens || 0
+                }
+            };
+        } catch (error) {
+            console.error("Error describing image:", error);
+            return {
+                description: "Unable to describe this image.",
+                usage: { inputTokens: 0, outputTokens: 0, totalTokens: 0 }
+            };
+        }
+    }
+
+    async compareImages(image1Path: string, image2Path: string, prompt: string): Promise<VisionResult> {
+        try {
+            const image1Data = fs.readFileSync(image1Path);
+            const image2Data = fs.readFileSync(image2Path);
+            const base64Image1 = image1Data.toString('base64');
+            const base64Image2 = image2Data.toString('base64');
+
+            const response = await this.openai.chat.completions.create({
+                model: this.config.model,
+                messages: [
+                    {
+                        role: "user",
+                        content: [
+                            { type: "text", text: prompt },
+                            {
+                                type: "image_url",
+                                image_url: {
+                                    url: `data:image/jpeg;base64,${base64Image1}`
+                                }
+                            },
+                            {
+                                type: "image_url",
+                                image_url: {
+                                    url: `data:image/jpeg;base64,${base64Image2}`
+                                }
+                            }
+                        ]
+                    }
+                ],
+                max_tokens: this.config.maxTokens || 300
+            });
+
+            return {
+                description: response.choices[0].message.content?.trim() || "Unable to describe the differences.",
+                usage: {
+                    inputTokens: response.usage?.prompt_tokens || 0,
+                    outputTokens: response.usage?.completion_tokens || 0,
+                    totalTokens: response.usage?.total_tokens || 0
+                }
+            };
+        } catch (error) {
+            console.error("Error comparing images:", error);
+            return {
+                description: "Unable to describe the differences between these images.",
+                usage: { inputTokens: 0, outputTokens: 0, totalTokens: 0 }
+            };
+        }
+    } async describeBatch(imagePaths: string[], lastBatchContext: BatchContext | null, prompt: string): Promise<VisionResult> {
+        try {
+            const imagesBase64 = imagePaths.map(fp => {
+                const imageData = fs.readFileSync(fp);
+                return imageData.toString('base64');
+            });
+
+            const messages: Array<{
+                role: 'system' | 'user' | 'assistant';
+                content: Array<{
+                    type: 'text' | 'image_url';
+                    text?: string;
+                    image_url?: { url: string };
+                }> | string;
+            }> = [
+                    {
+                        role: "user",
+                        content: [
+                            { type: "text", text: prompt }
+                        ]
+                    }
+                ];
+
+            if (lastBatchContext?.lastDescription) {
+                messages.unshift({
+                    role: "system",
+                    content: `Previous batch summary: ${lastBatchContext.lastDescription}`
+                });
+            }
+
+            imagesBase64.forEach(base64 => {
+                const lastMessage = messages[messages.length - 1];
+                if (Array.isArray(lastMessage.content)) {
+                    lastMessage.content.push({
+                        type: "image_url",
+                        image_url: {
+                            url: `data:image/jpeg;base64,${base64}`
+                        }
+                    });
+                }
+            });
+
+            const response = await this.openai.chat.completions.create({
+                model: this.config.model,
+                messages: messages as any, // eslint-disable-line @typescript-eslint/no-explicit-any
+                max_tokens: this.config.maxTokens || 300
+            });
+
+            return {
+                description: response.choices[0].message.content?.trim() || "Unable to describe this batch.",
+                usage: {
+                    inputTokens: response.usage?.prompt_tokens || 0,
+                    outputTokens: response.usage?.completion_tokens || 0,
+                    totalTokens: response.usage?.total_tokens || 0
+                }
+            };
+        } catch (error) {
+            console.error("Error describing batch of images:", error);
+            return {
+                description: "Unable to describe this batch of images.",
+                usage: { inputTokens: 0, outputTokens: 0, totalTokens: 0 }
+            };
+        }
+    }
+}
