@@ -1,4 +1,5 @@
 import { TTSProviderSettings } from "@interfaces/settings";
+import TTSResult from "@interfaces/tts_result";
 
 export abstract class TTSProvider {
     protected config: TTSProviderSettings;
@@ -7,4 +8,5 @@ export abstract class TTSProvider {
         this.config = config;
     }
 
+    abstract textToSpeech(text: string, outputPath: string): Promise<TTSResult>;
 }
