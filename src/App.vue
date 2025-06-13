@@ -4,7 +4,7 @@ import { useSettingsStore } from './managers/store';
 import OnboardingComponent from '@components/OnboardingComponent.vue';
 import SettingsViewer from '@components/SettingsViewer.vue';
 import Tabs from '@components/Tabs.vue'; // Added import
-import ProcessVideo from '@components/ProcessVideo.vue'; // Added import
+import BatchMode from '@components/BatchMode.vue'; // Added import
 import SystemStatus from '@components/SystemStatus.vue'
 
 const settingsStore = useSettingsStore();
@@ -12,7 +12,7 @@ const showOnboarding = computed(() => !settingsStore.isInitialized);
 
 // Tab configuration
 const tabs = [
-    { title: 'Full Video mode', component: ProcessVideo },
+    { title: 'Full Video mode', component: BatchMode},
     { title: 'Settings', component: SettingsViewer },
 ];
 

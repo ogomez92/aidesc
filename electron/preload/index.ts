@@ -1,30 +1,28 @@
-import { ipcRenderer, contextBridge } from 'electron'
+import { ipcRenderer } from 'electron'
 
-// --------- Expose some API to the Renderer process ---------
-contextBridge.exposeInMainWorld('ipcRenderer', {
-  on(...args: Parameters<typeof ipcRenderer.on>) {
+// @ts-expect-error (TypeScript might complain about assigning to window directly)
+window.ipcRenderer = {
+  on: (...args: Parameters<typeof ipcRenderer.on>) => {
     const [channel, listener] = args
     return ipcRenderer.on(channel, (event, ...args) => listener(event, ...args))
   },
-  off(...args: Parameters<typeof ipcRenderer.off>) {
+  off: (...args: Parameters<typeof ipcRenderer.off>) => {
     const [channel, ...omit] = args
     return ipcRenderer.off(channel, ...omit)
-  },  send(...args: Parameters<typeof ipcRenderer.send>) {
+  },
+  send: (...args: Parameters<typeof ipcRenderer.send>) => {
     const [channel, ...omit] = args
     return ipcRenderer.send(channel, ...omit)
   },
-  invoke(...args: Parameters<typeof ipcRenderer.invoke>) {
+  invoke: (...args: Parameters<typeof ipcRenderer.invoke>) => {
     const [channel, ...omit] = args
     return ipcRenderer.invoke(channel, ...omit)
   },
-
-  // Dialog APIs
   openFileDialog: () => ipcRenderer.invoke('dialog:openFile'),
-  saveFileDialog: (defaultPath?: string) => ipcRenderer.invoke('dialog:saveFile', defaultPath),
-
-  // You can expose other APTs you need here.
+  saveFileDialog: (data: string) => ipcRenderer.invoke('dialog:saveFile', data),
+  // You can expose other APIs you need here.
   // ...
-})
+}
 
 // --------- Preload scripts loading ---------
 function domReady(condition: DocumentReadyState[] = ['complete', 'interactive']) {
@@ -115,9 +113,7 @@ const { appendLoading, removeLoading } = useLoading()
 domReady().then(appendLoading)
 
 window.onmessage = (ev) => {
-  if (ev.data.payload === 'removeLoading') {
-    removeLoading()
-  }
+  ev.data.payload === 'removeLoading' && removeLoading()
 }
 
 setTimeout(removeLoading, 4999)
