@@ -1,6 +1,7 @@
 import { app, BrowserWindow, shell, ipcMain, dialog } from 'electron'
 import { fileURLToPath } from 'node:url'
 import path from 'node:path'
+import fs from 'node:fs/promises'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
@@ -109,14 +110,14 @@ ipcMain.handle('dialog:openFile', async () => {
   return null
 })
 
-ipcMain.handle('get-temp-path', (event) => {
+ipcMain.handle('get-temp-path', () => {
   return app.getPath('temp');
 });
 
 // Handle File Save Dialog
 ipcMain.handle('dialog:saveFile', async (event, defaultPath) => {
   const { canceled, filePath } = await dialog.showSaveDialog({
-    defaultPath: defaultPath || 'output.mp4',
+    defaultPath: defaultPath || '',
     filters: [
       { name: 'Video Files', extensions: ['mp4', 'avi', 'mkv', 'mov'] },
       { name: 'All Files', extensions: ['*'] }

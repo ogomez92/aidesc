@@ -1,3 +1,9 @@
+import { VisionProviderSettings } from "@interfaces/settings";
+import VisionProvider from "./vision_provider";
+import { GoogleGenerativeAI } from "@google/generative-ai";
+import VisionResult from "@interfaces/vision_result";
+import BatchContext from "@interfaces/batch_context";
+
 export class GeminiVisionProvider extends VisionProvider {
     private genAI: GoogleGenerativeAI;
     private model: any; // eslint-disable-line @typescript-eslint/no-explicit-any
@@ -9,6 +15,7 @@ export class GeminiVisionProvider extends VisionProvider {
     }
 
     async describeImage(imagePath: string, prompt: string): Promise<VisionResult> {
+        const fs = await import('fs');
         try {
             const imageData = fs.readFileSync(imagePath);
             const imagePart = {
@@ -43,6 +50,7 @@ export class GeminiVisionProvider extends VisionProvider {
     }
 
     async compareImages(image1Path: string, image2Path: string, prompt: string): Promise<VisionResult> {
+        const fs = await import('fs');
         try {
             const image1Data = fs.readFileSync(image1Path);
             const image2Data = fs.readFileSync(image2Path);
@@ -86,6 +94,7 @@ export class GeminiVisionProvider extends VisionProvider {
     }
 
     async describeBatch(imagePaths: string[], lastBatchContext: BatchContext | null, prompt: string): Promise<VisionResult> {
+        const fs = await import('fs');
         try {
             let contextualPrompt = prompt;
             if (lastBatchContext?.lastDescription) {
@@ -120,11 +129,7 @@ export class GeminiVisionProvider extends VisionProvider {
                 }
             };
         } catch (error) {
-            console.error("Error describing batch of images with Gemini:", error);
-            return {
-                description: "Unable to describe this batch of images.",
-                usage: { inputTokens: 0, outputTokens: 0, totalTokens: 0 }
-            };
+            throw new Error(`Error describing batch of images with Gemini: ${error}`);
         }
     }
 }

@@ -1,14 +1,22 @@
+import { VisionProviderSettings } from "@interfaces/settings";
+import VisionProvider from "./vision_provider";
+import { OpenAI } from 'openai';
+import VisionResult from "@interfaces/vision_result";
+import BatchContext from "@interfaces/batch_context";
+
 export class OpenAIVisionProvider extends VisionProvider {
     private openai: OpenAI;
 
     constructor(config: VisionProviderSettings) {
         super(config);
         this.openai = new OpenAI({
+            dangerouslyAllowBrowser: true,
             apiKey: config.apiKey,
         });
     }
 
     async describeImage(imagePath: string, prompt: string): Promise<VisionResult> {
+        const fs = await import('fs');
         try {
             const imageData = fs.readFileSync(imagePath);
             const base64Image = imageData.toString('base64');
@@ -51,6 +59,7 @@ export class OpenAIVisionProvider extends VisionProvider {
     }
 
     async compareImages(image1Path: string, image2Path: string, prompt: string): Promise<VisionResult> {
+        const fs = await import('fs');
         try {
             const image1Data = fs.readFileSync(image1Path);
             const image2Data = fs.readFileSync(image2Path);
@@ -97,7 +106,11 @@ export class OpenAIVisionProvider extends VisionProvider {
                 usage: { inputTokens: 0, outputTokens: 0, totalTokens: 0 }
             };
         }
-    } async describeBatch(imagePaths: string[], lastBatchContext: BatchContext | null, prompt: string): Promise<VisionResult> {
+    }
+
+    async describeBatch(imagePaths: string[], lastBatchContext: BatchContext | null, prompt: string): Promise<VisionResult> {
+        const fs = await import('fs');
+
         try {
             const imagesBase64 = imagePaths.map(fp => {
                 const imageData = fs.readFileSync(fp);
@@ -154,11 +167,7 @@ export class OpenAIVisionProvider extends VisionProvider {
                 }
             };
         } catch (error) {
-            console.error("Error describing batch of images:", error);
-            return {
-                description: "Unable to describe this batch of images.",
-                usage: { inputTokens: 0, outputTokens: 0, totalTokens: 0 }
-            };
+            throw new Error(`Error describing batch of images: ${error}`);
         }
     }
 }

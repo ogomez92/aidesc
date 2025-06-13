@@ -69,7 +69,7 @@ const confirmMessage = ref('');
 // File operations
 const openFile = async () => {
   try {
-    const filePath = await window.ipcRenderer.openFileDialog()
+    const filePath = await window.ipcRenderer.openFileDialog();
     if (filePath) {
       selectedFile.value = filePath
       try {
@@ -105,7 +105,7 @@ const openSegmentsFile = async () => {
 
   try {
     const filePath = await window.ipcRenderer.openFileDialog()
-    selectedFile.value = filePath
+    selectedSegmentsFile.value = filePath
     if (filePath) {
       const data = fs.readFileSync(filePath, 'utf8');
       const segmentsData = JSON.parse(data);

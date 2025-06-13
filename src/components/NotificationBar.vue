@@ -1,11 +1,7 @@
 <template>
   <Transition name="toast">
-    <div v-if="isVisible && visible" :class="['toast', `toast--${type}`]">
+    <div v-if="isVisible && visible" class="toast toast--info">
       <div class="toast__content">
-        <div class="toast__icon">
-          <span v-if="type === 'warning'">⚠️</span>
-          <span v-else>ℹ️</span>
-        </div>
         <div class="toast__message" aria-live="assertive" aria-atomic="true">
           {{ message }}
         </div>
@@ -19,7 +15,6 @@ import { ref, watch } from 'vue';
 
 interface Props {
   message: string;
-  type: 'warning' | 'info';
   visible: boolean;
 }
 

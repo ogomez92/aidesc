@@ -9,6 +9,7 @@ export class OpenAITTSProvider extends TTSProvider {
     constructor(config: TTSProviderSettings) {
         super(config);
         this.openai = new OpenAI({
+            dangerouslyAllowBrowser: true,
             apiKey: config.apiKey,
         });
     }

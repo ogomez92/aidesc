@@ -10,8 +10,8 @@ import CliHelper from '@helpers/cli';
 import { EventEmitter } from 'events';
 import { VideoService } from '@services/video';
 import VisionSegment from '@interfaces/vision_segment';
-import ProcessingResult from '@interfaces/processing_result';
-
+import TTSProcessingResult from '@interfaces/tts_processing_result';
+import EventType from '@enums/event_type';
 
 export class VideoProcessor extends EventEmitter {
     private settings: Settings;
@@ -162,7 +162,7 @@ export class VideoProcessor extends EventEmitter {
 
     public async generateVisionSegments(
         videoFilePath: string,
-    ): Promise<VisionProcessingResult> {
+    ): Promise<void> {
         const fs = await import('fs');
         const path = await import('path');
 
@@ -188,7 +188,7 @@ export class VideoProcessor extends EventEmitter {
 
         const batchWindowDuration = this.settings.batchWindowDuration || 15;
         const framesInBatch = this.settings.framesInBatch || 10;
-        const totalBatches = Math.floor(videoDuration / batchWindowDuration);
+        const totalBatches = Math.ceil(videoDuration / batchWindowDuration);
 
         const visionSegments: VisionSegment[] = [];
         const stats: ProcessingStats = {
@@ -204,16 +204,14 @@ export class VideoProcessor extends EventEmitter {
 
         for (let batchIndex = 0; batchIndex < totalBatches; batchIndex++) {
             const batchStart = batchIndex * batchWindowDuration;
-            const batchEnd = batchStart + batchWindowDuration;
+            const batchEnd = Math.min(batchStart + batchWindowDuration, videoDuration);
 
-            if (batchEnd > videoDuration) break;
-
-            this.emit(`Processing segment ${batchIndex + 1}/${totalBatches}`);
+            this.emit(EventType.Progress, `Processing segment ${batchIndex + 1} of ${totalBatches}...`);
 
             // Capture frames for this batch
             const framePaths: string[] = [];
             for (let i = 0; i < framesInBatch; i++) {
-                const t = batchStart + (i * batchWindowDuration) / framesInBatch;
+                const t = batchStart + (i * (batchEnd - batchStart)) / framesInBatch;
                 const frameFilePath = path.join(tempDir, `batch_${batchIndex}_frame_${i}.jpg`);
                 await this.captureFrame(videoFilePath, t, frameFilePath);
                 framePaths.push(frameFilePath);
@@ -225,6 +223,12 @@ export class VideoProcessor extends EventEmitter {
             stats.totalVisionOutputCost += visionResult.usage.outputTokens;
             stats.totalCost += visionResult.usage.totalTokens;
 
+            visionSegments.push({
+                startTime: batchStart,
+                description: visionResult.description,
+            });
+
+
             // Update positions and context
             lastBatchContext = {
                 lastDescription: visionResult.description,
@@ -232,12 +236,16 @@ export class VideoProcessor extends EventEmitter {
             };
         }
 
-        return {
+        const result: VisionProcessingResult = {
             segments: visionSegments,
             stats
-        };
+        }
+
+        this.emit(EventType.Complete, result);
+
     }
 
+    /*
     public async generateTtsSegments(
         videoFilePath: string,
         segments: VisionSegment[],
@@ -351,4 +359,5 @@ export class VideoProcessor extends EventEmitter {
             stats
         }
     }
+        */
 }
