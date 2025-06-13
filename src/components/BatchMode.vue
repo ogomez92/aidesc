@@ -3,21 +3,30 @@
     <h2>Process Local Video</h2>
     <p>Select a video file to process.</p>
   </div>
-  <div class="file-controls">
+  <div v-if="!continueClicked" class="file-controls">
     <button class="btn btn-primary" @click="openFile">
       {{ selectedFile ? 'Change Video File' : 'Select Video File' }}
     </button>
+    <button class="btn btn-primary" @click="openSegmentsFile">
+      Import Segments.json file
+    </button>
+
     <div v-if="selectedFile" class="selected-file">
       <h3>Selected File:</h3>
       <p class="file-path">{{ selectedFile }}</p>
       <p class="file-path">{{ fileDuration }}</p>
     </div>
+    <div v-if="selectedSegmentsFile" class="selected-file">
+      <h3>Selected segments:</h3>
+      <p class="file-path">{{ selectedSegmentsFile }}</p>
+    </div>
 
     <p class="confirmation">{{ confirmMessage }}</p>
-    <button :disabled=!isVideoUploaded class="btn btn-secondary">
-      Continue with {{ settings.visionProvider }}
+    <button :disabled="!selectedFile" class="btn btn-secondary" @click="clickContinue">
+      Continue
     </button>
   </div>
+  <BatchWorker :file="selectedFile" :segments="selectedSegmentsFile" />
   <ToastMessage v-if="showToast" :message="toastMessage" :type="toastType" :visible="showToast"
     @dismiss="dismissToast" />
 
@@ -27,6 +36,7 @@
 import { useSettingsStore } from '@managers/store';
 import { Settings } from '@interfaces/settings';
 import { ref } from 'vue'
+import AudioSegment from '@interfaces/audio_segment';
 import ToastMessage from './ToastMessage.vue'
 import { VideoService } from '@services/video'
 
@@ -35,14 +45,19 @@ const settingsStore = useSettingsStore();
 const settings: Settings = settingsStore.settings;
 // Reactive state
 const selectedFile = ref<string | null>(null)
+const selectedSegmentsFile = ref<string | null>(null)
 const fileDuration = ref<string | null>(null)
-const isVideoUploaded = ref(false);
 const toastType = ref<'warning' | 'info'>('info');
+const continueClicked = ref(false);
 const toastMessage = ref('');
 const showToast = ref(false);
 const dismissToast = () => {
   showToast.value = false;
 };
+
+const clickContinue = () => {
+  continueClicked.value = true;
+}
 
 const confirmMessage = ref('');
 
@@ -57,7 +72,6 @@ const openFile = async () => {
         const minutes = Math.floor(duration / 60);
         const seconds = Math.floor(duration % 60);
         fileDuration.value = `Duration: ${minutes} min ${seconds} sec`;
-        isVideoUploaded.value = true;
         if (duration > 20) {
           toastType.value = "warning";
           toastMessage.value = "Warning: Longer videos are more expensive to describe, especially for voice generation. Consider using a shorter video or using a voice provider that does not require AI."
@@ -65,18 +79,49 @@ const openFile = async () => {
         }
         const segments = VideoService.calculateNumberOfSegments(duration, settings);
 
-        confirmMessage.value = `The video has been successfully processed. It will be divided into ${segments} segments for description. Please press continue to start generating vision segments with ${settings.visionProvider}`;
+        confirmMessage.value = `The video has been successfully processed. It will be divided into ${segments} segments for description. Please press continue to start generating vision segments with ${settings.visionProvider} or import a previously generated segments.json file`;
       } catch (error) {
         toastMessage.value = `Failed to get video duration. The file type might not be supported by ffmpeg. The error was: ${error}`;
         toastType.value = "warning";
         showToast.value = true;
+        selectedFile.value = '';
       }
-
     }
   } catch (error) {
-    console.error('Error opening file:', error)
+    toastMessage.value = `Failed to open file. The error was: ${error}`;
+    toastType.value = "warning";
+    showToast.value = true;
+    selectedFile.value = '';
   }
 }
+
+const openSegmentsFile = async () => {
+  const fs = await import('fs');
+
+  try {
+    const filePath = await window.ipcRenderer.openFileDialog()
+    selectedFile.value = filePath
+    if (filePath) {
+      const data = fs.readFileSync(filePath, 'utf8');
+      const segmentsData = JSON.parse(data);
+
+      if (Array.isArray(segmentsData.segments)) {
+        const segments: AudioSegment[] = segmentsData.segments;
+        toastMessage.value = `Successfully imported ${segments.length} audio segments from ${filePath}`;
+        toastType.value = "info";
+        showToast.value = true;
+      } else {
+        throw new Error('Invalid segments file format. Expected an array of segments.');
+      }
+    }
+  } catch (error) {
+    selectedSegmentsFile.value = '';
+    toastMessage.value = `Failed to import segments file. The error was: ${error}`;
+    toastType.value = "warning";
+    showToast.value = true;
+  }
+}
+
 </script>
 
 <style scoped>
