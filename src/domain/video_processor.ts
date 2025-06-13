@@ -1,6 +1,6 @@
 import { Settings } from '../interfaces/settings';
 import ProcessingStats from '@interfaces/processing_stats';
-import ProcessingResult from '@interfaces/processing_result';
+import VisionProcessingResult from '@interfaces/vision_processing_result';
 import AudioSegment from '@interfaces/audio_segment';
 import BatchContext from '@interfaces/batch_context';
 import { VisionProviderFactory } from '@domain/vision_provider_factory';
@@ -9,9 +9,17 @@ import VisionResult from '@interfaces/vision_result';
 import CliHelper from '@helpers/cli';
 import { EventEmitter } from 'events';
 import { VideoService } from '@services/video';
+import VisionSegment from '@interfaces/vision_segment';
+import ProcessingResult from '@interfaces/processing_result';
 
-// const tempPath: string = await window.ipcRenderer.invoke('get-temp-path');
-export class VideoProcessor {
+
+export class VideoProcessor extends EventEmitter {
+    private settings: Settings;
+
+    constructor(settings: Settings) {
+        super();
+        this.settings = settings;
+    }
     public async captureFrame(videoFilePath: string, timePosition: number, outputPath: string, lowQuality: boolean = true): Promise<void> {
         const args: string[] = [
             '-ss', timePosition.toString(),
@@ -151,18 +159,16 @@ export class VideoProcessor {
 
         return outputPath;
     }
-    
-    public async generateAudioDescription(
+
+    public async generateVisionSegments(
         videoFilePath: string,
-        settings: Settings,
-        tempDir: string,
-        outputDir: string,
-        onProgress?: (progress: number, message: string) => void
-    ): Promise<ProcessingResult> {
+    ): Promise<VisionProcessingResult> {
         const fs = await import('fs');
         const path = await import('path');
 
-        // Ensure directories exist
+        const tempDir: string = await window.ipcRenderer.invoke('get-temp-path');
+        const outputDir: string = path.join(await window.ipcRenderer.invoke('get-temp-path', 'temp'));
+
         if (!fs.existsSync(tempDir)) {
             fs.mkdirSync(tempDir, { recursive: true });
         }
@@ -170,26 +176,98 @@ export class VideoProcessor {
             fs.mkdirSync(outputDir, { recursive: true });
         }
 
-        // Get video duration
         const videoDuration = await VideoService.getDuration(videoFilePath);
-        onProgress?.(5, 'Got video duration');
 
-        // Initialize providers
-        const visionProvider = settings.visionProviders.find(p => p.name === settings.visionProvider);
-        const ttsProvider = settings.ttsProviders.find(p => p.name === settings.ttsProvider);
+        const visionProvider = this.settings.visionProviders.find(p => p.name === this.settings.visionProvider);
 
-        if (!visionProvider || !ttsProvider) {
-            throw new Error('Vision or TTS provider not found in settings');
+        if (!visionProvider) {
+            throw new Error('Could not initialize vision provider');
         }
 
-        const vision = VisionProviderFactory.createProvider(settings.visionProvider, visionProvider);
-        const tts = TTSProviderFactory.createProvider(settings.ttsProvider, ttsProvider);
+        const vision = VisionProviderFactory.createProvider(this.settings.visionProvider, visionProvider);
 
-        onProgress?.(10, 'Initialized providers');
+        const batchWindowDuration = this.settings.batchWindowDuration || 15;
+        const framesInBatch = this.settings.framesInBatch || 10;
+        const totalBatches = Math.floor(videoDuration / batchWindowDuration);
+
+        const visionSegments: VisionSegment[] = [];
+        const stats: ProcessingStats = {
+            totalFrames: 0,
+            totalBatches: totalBatches,
+            totalVisionInputCost: 0,
+            totalVisionOutputCost: 0,
+            totalTTSCost: 0,
+            totalCost: 0
+        };
+
+        let lastBatchContext: BatchContext | null = null;
+
+        for (let batchIndex = 0; batchIndex < totalBatches; batchIndex++) {
+            const batchStart = batchIndex * batchWindowDuration;
+            const batchEnd = batchStart + batchWindowDuration;
+
+            if (batchEnd > videoDuration) break;
+
+            this.emit(`Processing segment ${batchIndex + 1}/${totalBatches}`);
+
+            // Capture frames for this batch
+            const framePaths: string[] = [];
+            for (let i = 0; i < framesInBatch; i++) {
+                const t = batchStart + (i * batchWindowDuration) / framesInBatch;
+                const frameFilePath = path.join(tempDir, `batch_${batchIndex}_frame_${i}.jpg`);
+                await this.captureFrame(videoFilePath, t, frameFilePath);
+                framePaths.push(frameFilePath);
+            }
+
+            const visionResult: VisionResult = await vision.describeBatch(framePaths, lastBatchContext, this.settings.batchPrompt);
+
+            stats.totalVisionInputCost += visionResult.usage.inputTokens;
+            stats.totalVisionOutputCost += visionResult.usage.outputTokens;
+            stats.totalCost += visionResult.usage.totalTokens;
+
+            // Update positions and context
+            lastBatchContext = {
+                lastDescription: visionResult.description,
+                lastFramePaths: framePaths.slice(-2)
+            };
+        }
+
+        return {
+            segments: visionSegments,
+            stats
+        };
+    }
+
+    public async generateTtsSegments(
+        videoFilePath: string,
+        segments: VisionSegment[],
+    ): Promise<ProcessingResult> {
+        const fs = await import('fs');
+        const path = await import('path');
+
+        const tempDir: string = await window.ipcRenderer.invoke('get-temp-path');
+        const outputDir: string = path.join(await window.ipcRenderer.invoke('get-temp-path', 'temp'));
+
+        if (!fs.existsSync(tempDir)) {
+            fs.mkdirSync(tempDir, { recursive: true });
+        }
+        if (!fs.existsSync(outputDir)) {
+            fs.mkdirSync(outputDir, { recursive: true });
+        }
+
+        const videoDuration = await VideoService.getDuration(videoFilePath);
+
+        const ttsProvider = this.settings.ttsProviders.find(p => p.name === this.settings.ttsProvider);
+
+        if (!ttsProvider) {
+            throw new Error('Could not initialize tts provider');
+        }
+
+        const tts = TTSProviderFactory.createProvider(this.settings.ttsProvider, ttsProvider);
 
         // Process in batch mode (simplified for Vue integration)
-        const batchWindowDuration = settings.batchWindowDuration || 15;
-        const framesInBatch = settings.framesInBatch || 10;
+        const batchWindowDuration = this.settings.batchWindowDuration || 15;
+        const framesInBatch = this.settings.framesInBatch || 10;
         const totalBatches = Math.floor(videoDuration / batchWindowDuration);
 
         const audioSegments: AudioSegment[] = [];
@@ -223,7 +301,7 @@ export class VideoProcessor {
             }
 
             // Get description from vision AI
-            const visionResult: VisionResult = await vision.describeBatch(framePaths, lastBatchContext, settings.batchPrompt);
+            const visionResult: VisionResult = await vision.describeBatch(framePaths, lastBatchContext, this.settings.batchPrompt);
 
             // Update stats
             stats.totalVisionInputCost += visionResult.usage.inputTokens;
@@ -271,6 +349,6 @@ export class VideoProcessor {
             videoFile: videoFilePath,
             audioDescriptionFile: outputAudioPath,
             stats
-        };
+        }
     }
 }

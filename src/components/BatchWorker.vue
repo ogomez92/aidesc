@@ -2,6 +2,10 @@
 import VisionSegment from '@interfaces/vision_segment';
 import { VideoService } from '@services/video';
 import { ref, onMounted, defineProps } from 'vue';
+import { VideoProcessor } from '@services/video_processor';
+import { useSettingsStore } from '@managers/store';
+import { Settings } from '@interfaces/settings';
+const settingsStore = useSettingsStore();
 
 let segmentsArray: VisionSegment[] = [];
 const fileDuration = ref<string | null>(null)
@@ -18,6 +22,7 @@ const props = defineProps<{
 }>();
 
 onMounted(async () => {
+    const videoProcessor = new VideoProcessor(settingsStore.settings);
     const fs = await import('fs');
     const duration: number = await VideoService.getDuration(props.file);
     const minutes = Math.floor(duration / 60);
