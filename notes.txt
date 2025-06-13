@@ -30,3 +30,4 @@ how about we remove prompts from settings, and add them to the video processing 
 in fact we could take most things away from settings and have them displayed in the video screen, like the batch window context etc and then in the processing video we can just add the relevant settings, then in continuous mode we do the same and add settings for that mode.
 
 in continuous mode and batch mode there will be a record from cam button.
+in continuous mode you should be able to update the prompt at will. See if it's possible not to describe if the app is focused.

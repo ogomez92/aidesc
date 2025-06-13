@@ -1,9 +1,14 @@
 <template>
   <div class="process-video-container">
-    <h2>Process Local Video</h2>
-    <p>Select a video file to process.</p>
+    <h2>Batch Mode</h2>
+
   </div>
   <div v-if="!continueClicked" class="file-controls">
+    <p>Select a video file. Then, you can generate or import audio description segments generated according to your
+      settings. You
+      can then save them, or choose to generate an audio description sound file with a text to speech provider or play
+      the
+      video with the description being sent to your clipboard or screen reader.</p>
     <button class="btn btn-primary" @click="openFile">
       {{ selectedFile ? 'Change Video File' : 'Select Video File' }}
     </button>
@@ -26,7 +31,7 @@
       Continue
     </button>
   </div>
-  <BatchWorker :file="selectedFile" :segments="selectedSegmentsFile" />
+  <BatchWorker v-if="continueClicked" :file="selectedFile" :segments="selectedSegmentsFile" />
   <ToastMessage v-if="showToast" :message="toastMessage" :type="toastType" :visible="showToast"
     @dismiss="dismissToast" />
 
@@ -115,7 +120,7 @@ const openSegmentsFile = async () => {
       }
     }
   } catch (error) {
-    selectedSegmentsFile.value = '';
+    selectedSegmentsFile.value = null;
     toastMessage.value = `Failed to import segments file. The error was: ${error}`;
     toastType.value = "warning";
     showToast.value = true;
