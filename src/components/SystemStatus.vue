@@ -29,8 +29,8 @@ onMounted(async () => {
 <template>
   <h2>System Status</h2>
   <footer>
-  <p>{{ ffmpegStatus }}</p>
-  <p>{{ ffprobeStatus }}</p>
+  <h3>{{ ffmpegStatus }}</h3>
+  <h3>{{ ffprobeStatus }}</h3>
   </footer>
 </template>
 

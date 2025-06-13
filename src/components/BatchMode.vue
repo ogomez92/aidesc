@@ -7,26 +7,32 @@
     <button class="btn btn-primary" @click="openFile">
       {{ selectedFile ? 'Change Video File' : 'Select Video File' }}
     </button>
+    <div v-if="selectedFile" class="selected-file">
+      <h3>Selected File:</h3>
+      <p class="file-path">{{ selectedFile }}</p>
+      <p class="file-path">{{ fileDuration }}</p>
+    </div>
 
+    <p class="confirmation">{{ confirmMessage }}</p>
     <button :disabled=!isVideoUploaded class="btn btn-secondary">
-      Continue
+      Continue with {{ settings.visionProvider }}
     </button>
   </div>
   <ToastMessage v-if="showToast" :message="toastMessage" :type="toastType" :visible="showToast"
     @dismiss="dismissToast" />
 
-  <div v-if="selectedFile" class="selected-file">
-    <h3>Selected File:</h3>
-    <p class="file-path">{{ selectedFile }}</p>
-    <p class="file-path">{{ fileDuration }}</p>
-  </div>
 </template>
 
 <script setup lang="ts">
+import { useSettingsStore } from '@managers/store';
+import { Settings } from '@interfaces/settings';
 import { ref } from 'vue'
 import ToastMessage from './ToastMessage.vue'
 import { VideoService } from '@services/video'
 
+const settingsStore = useSettingsStore();
+
+const settings: Settings = settingsStore.settings;
 // Reactive state
 const selectedFile = ref<string | null>(null)
 const fileDuration = ref<string | null>(null)
@@ -38,6 +44,8 @@ const dismissToast = () => {
   showToast.value = false;
 };
 
+const confirmMessage = ref('');
+
 // File operations
 const openFile = async () => {
   try {
@@ -46,7 +54,6 @@ const openFile = async () => {
       selectedFile.value = filePath
       try {
         const duration: number = await VideoService.getDuration(filePath);
-        // calculate the duration in minutes/seconds and display it as a string in the file duration
         const minutes = Math.floor(duration / 60);
         const seconds = Math.floor(duration % 60);
         fileDuration.value = `Duration: ${minutes} min ${seconds} sec`;
@@ -56,8 +63,11 @@ const openFile = async () => {
           toastMessage.value = "Warning: Longer videos are more expensive to describe, especially for voice generation. Consider using a shorter video or using a voice provider that does not require AI."
           showToast.value = true;
         }
-      } catch {
-        toastMessage.value = 'Failed to get video duration. The file type might not be supported by ffmpeg.';
+        const segments = VideoService.calculateNumberOfSegments(duration, settings);
+
+        confirmMessage.value = `The video has been successfully processed. It will be divided into ${segments} segments for description. Please press continue to start generating vision segments with ${settings.visionProvider}`;
+      } catch (error) {
+        toastMessage.value = `Failed to get video duration. The file type might not be supported by ffmpeg. The error was: ${error}`;
         toastType.value = "warning";
         showToast.value = true;
       }
@@ -142,5 +152,11 @@ h2 {
   font-size: 0.875rem;
   color: #6c757d;
   word-break: break-all;
+}
+
+.confirmation {
+  margin-top: 1rem;
+  font-size: 0.875rem;
+  color: #6c757d;
 }
 </style>

@@ -160,6 +160,13 @@ export class VideoService {
 
         return outputPath;
     }
+    
+    public static calculateNumberOfSegments(duration: number, settings: Settings) {
+        const batchWindowDuration = settings.batchWindowDuration || 15;
+        const framesInBatch = settings.framesInBatch || 10;
+        const totalBatches = Math.ceil(duration/ batchWindowDuration);
+        return totalBatches;
+    }
 
     public static async generateAudioDescription(
         videoFilePath: string,
@@ -299,7 +306,7 @@ export class VideoService {
         }
     }
 
-        public static async isFfprobeInstalled(): Promise<DependencyCheckResult> {
+    public static async isFfprobeInstalled(): Promise<DependencyCheckResult> {
         const cliHelper = new CliHelper('ffprobe', ['-version']);
         try {
             const result: string = cliHelper.executeSync();
