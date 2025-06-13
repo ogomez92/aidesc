@@ -12,7 +12,6 @@ import DependencyCheckResult from '@interfaces/dependency_check_result';
 // Main VideoService class
 export class VideoService {
     public static async getDuration(filePath: string): Promise<number> {
-        // use cli helper to get the duration
         const cliHelper = new CliHelper('ffprobe', ['-v', 'error', '-show_entries', 'format=duration', '-of', 'default=noprint_wrappers=1:nokey=1', filePath]);
         try {
             const result: string = cliHelper.executeSync();

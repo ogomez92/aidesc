@@ -2,34 +2,23 @@
   <div class="process-video-container">
     <h2>Process Local Video</h2>
     <p>Select a video file to process.</p>
-    
-    <div class="file-controls">
-      <button 
-        class="btn btn-primary" 
-        @click="openFile"
-        :disabled="isProcessing"
-      >
-        {{ selectedFile ? 'Change Video File' : 'Select Video File' }}
-      </button>
-      
-      <button 
-        class="btn btn-secondary" 
-        @click="saveFile"
-        :disabled="!selectedFile || isProcessing"
-      >
-        Save Processed Video
-      </button>
-    </div>
+  </div>
+  <div class="file-controls">
+    <button class="btn btn-primary" @click="openFile">
+      {{ selectedFile ? 'Change Video File' : 'Select Video File' }}
+    </button>
 
-    <div v-if="selectedFile" class="selected-file">
-      <h3>Selected File:</h3>
-      <p class="file-path">{{ selectedFile }}</p>
-    </div>
+    <button :disabled=!isVideoUploaded class="btn btn-secondary">
+      Continue
+    </button>
+  </div>
+  <ToastMessage v-if="showToast" :message="toastMessage" :type="toastType" :visible="showToast"
+    @dismiss="dismissToast" />
 
-    <div v-if="saveLocation" class="save-location">
-      <h3>Save Location:</h3>
-      <p class="file-path">{{ saveLocation }}</p>
-    </div>
+  <div v-if="selectedFile" class="selected-file">
+    <h3>Selected File:</h3>
+    <p class="file-path">{{ selectedFile }}</p>
+    <p class="file-path">{{ fileDuration }}</p>
   </div>
 </template>
 
@@ -40,8 +29,14 @@ import { VideoService } from '@services/video'
 
 // Reactive state
 const selectedFile = ref<string | null>(null)
-const saveLocation = ref<string | null>(null)
-const isProcessing = ref(false)
+const fileDuration = ref<string | null>(null)
+const isVideoUploaded = ref(false);
+const toastType = ref<'warning' | 'info'>('info');
+const toastMessage = ref('');
+const showToast = ref(false);
+const dismissToast = () => {
+  showToast.value = false;
+};
 
 // File operations
 const openFile = async () => {
@@ -49,27 +44,27 @@ const openFile = async () => {
     const filePath = await window.ipcRenderer.openFileDialog()
     if (filePath) {
       selectedFile.value = filePath
-      console.log('Selected file:', filePath)
+      try {
+        const duration: number = await VideoService.getDuration(filePath);
+        // calculate the duration in minutes/seconds and display it as a string in the file duration
+        const minutes = Math.floor(duration / 60);
+        const seconds = Math.floor(duration % 60);
+        fileDuration.value = `Duration: ${minutes} min ${seconds} sec`;
+        isVideoUploaded.value = true;
+        if (duration > 20) {
+          toastType.value = "warning";
+          toastMessage.value = "Warning: Longer videos are more expensive to describe, especially for voice generation. Consider using a shorter video or using a voice provider that does not require AI."
+          showToast.value = true;
+        }
+      } catch {
+        toastMessage.value = 'Failed to get video duration. The file type might not be supported by ffmpeg.';
+        toastType.value = "warning";
+        showToast.value = true;
+      }
+
     }
   } catch (error) {
     console.error('Error opening file:', error)
-  }
-}
-
-const saveFile = async () => {
-  try {
-    const defaultName = selectedFile.value 
-      ? selectedFile.value.replace(/\.[^/.]+$/, '_processed.mp4')
-      : 'processed_video.mp4'
-    
-    const filePath = await window.ipcRenderer.saveFileDialog(defaultName)
-    if (filePath) {
-      saveLocation.value = filePath
-      console.log('Save location:', filePath)
-      // Here you would implement the actual processing logic
-    }
-  } catch (error) {
-    console.error('Error saving file:', error)
   }
 }
 </script>

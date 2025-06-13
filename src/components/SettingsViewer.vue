@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue';
 import { useSettingsStore } from '@managers/store';
-import { VideoService } from '@services/video';
 
 import { Settings, VisionProviderSettings, TTSProviderSettings } from '@interfaces/settings';
 import ToastMessage from './ToastMessage.vue';
@@ -57,23 +56,6 @@ const showToast = ref(false);
 const toastMessage = ref('');
 const toastType = ref<'warning' | 'info'>('info');
 
-const checkFfmpegInstallation = async () => {
-    try {
-        const installed = await VideoService.isFfmpegInstalled(); // Corrected static method call
-        if (installed) {
-            toastMessage.value = 'FFmpeg is installed correctly.';
-            toastType.value = 'info';
-        } else {
-            toastMessage.value = 'FFmpeg is not installed or not found in PATH.';
-            toastType.value = 'warning';
-        }
-    } catch (error) {
-        toastMessage.value = `Ffmpeg installation check error: ${error}`;
-        toastType.value = 'warning';
-
-    }
-    showToast.value = true;
-};
 
 const saveSettings = () => {
     settingsStore.setSettings(localSettings.value as Settings);
@@ -384,9 +366,6 @@ onMounted(() => {
                 </button>
                 <button type="button" @click="showResetConfirmModal = true" class="btn btn-danger">
                     Reset Settings
-                </button>
-                <button type="button" @click="checkFfmpegInstallation" class="btn btn-info">
-                    Check FFmpeg
                 </button>
             </div>
         </form> <!-- Reset Confirmation Modal -->

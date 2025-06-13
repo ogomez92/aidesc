@@ -6,7 +6,7 @@
           <span v-if="type === 'warning'">⚠️</span>
           <span v-else>ℹ️</span>
         </div>
-        <div class="toast__message" :role="type === 'warning' ? 'alert' : status" aria-atomic="true">
+        <div class="toast__message" :role="type === 'warning' ? 'alert' : 'status'" aria-atomic="true">
           {{ message }}
         </div>
         <button type="button" class="toast__close" @click="dismiss" aria-label="Dismiss notification">
@@ -18,7 +18,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, watch } from 'vue';
+import { ref, watch } from 'vue';
 
 interface Props {
   message: string;
@@ -41,32 +41,16 @@ const dismiss = () => {
 };
 
 // Auto-dismiss after 5 seconds
-let timeoutId: ReturnType<typeof setTimeout>;
-
-const startTimer = () => {
-  if (timeoutId) {
-    clearTimeout(timeoutId);
-  }
-  timeoutId = setTimeout(() => {
-    dismiss();
-  }, 5000);
-};
 
 // Watch for visibility changes
 watch(() => props.visible, (newVisible) => {
   if (newVisible) {
     isVisible.value = true;
-    startTimer();
   } else {
     isVisible.value = false;
   }
 }, { immediate: true });
 
-onMounted(() => {
-  if (props.visible) {
-    startTimer();
-  }
-});
 </script>
 
 <style scoped>
