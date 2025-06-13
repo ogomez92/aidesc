@@ -1,6 +1,6 @@
 export default interface AudioSegment {
-    audioFile?: string;
+    audioFile: string;
     startTime: number;
     duration: number;
-    description?: string;
+    description: string;
 }

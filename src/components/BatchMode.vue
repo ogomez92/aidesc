@@ -1,7 +1,6 @@
 <template>
   <div class="process-video-container">
     <h2>Batch Mode</h2>
-
   </div>
   <div v-if="!continueClicked" class="file-controls">
     <p>Select a video file. Then, you can generate or import audio description segments generated according to your
@@ -31,7 +30,7 @@
       Continue
     </button>
   </div>
-  <BatchWorker v-if="continueClicked" :file="selectedFile" :segments="selectedSegmentsFile" />
+  <BatchWorker v-if="continueClicked" :file="selectedFile || ''" :segments="selectedSegmentsFile" />
   <ToastMessage v-if="showToast" :message="toastMessage" :type="toastType" :visible="showToast"
     @dismiss="dismissToast" />
 
@@ -39,9 +38,10 @@
 
 <script setup lang="ts">
 import { useSettingsStore } from '@managers/store';
+import BatchWorker from '@components/BatchWorker.vue';
 import { Settings } from '@interfaces/settings';
 import { ref } from 'vue'
-import AudioSegment from '@interfaces/audio_segment';
+import VisionSegment from '@interfaces/vision_segment';
 import ToastMessage from './ToastMessage.vue'
 import { VideoService } from '@services/video'
 
@@ -111,7 +111,7 @@ const openSegmentsFile = async () => {
       const segmentsData = JSON.parse(data);
 
       if (Array.isArray(segmentsData.segments)) {
-        const segments: AudioSegment[] = segmentsData.segments;
+        const segments: VisionSegment[] = segmentsData.segments;
         toastMessage.value = `Successfully imported ${segments.length} audio segments from ${filePath}`;
         toastType.value = "info";
         showToast.value = true;

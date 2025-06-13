@@ -109,6 +109,10 @@ ipcMain.handle('dialog:openFile', async () => {
   return null
 })
 
+ipcMain.handle('get-temp-path', (event) => {
+  return app.getPath('temp');
+});
+
 // Handle File Save Dialog
 ipcMain.handle('dialog:saveFile', async (event, defaultPath) => {
   const { canceled, filePath } = await dialog.showSaveDialog({

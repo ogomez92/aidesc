@@ -8,8 +8,7 @@ import { TTSProviderFactory } from '@domain/tts_provider_factory';
 import VisionResult from '@interfaces/vision_result';
 import CliHelper from '@helpers/cli';
 import DependencyCheckResult from '@interfaces/dependency_check_result';
-
-// Main VideoService class
+// const tempPath: string = await window.ipcRenderer.invoke('get-temp-path');
 export class VideoService {
     public static async getDuration(filePath: string): Promise<number> {
         const cliHelper = new CliHelper('ffprobe', ['-v', 'error', '-show_entries', 'format=duration', '-of', 'default=noprint_wrappers=1:nokey=1', filePath]);
@@ -83,7 +82,7 @@ export class VideoService {
 
             // Standardize segment to WAV
             await new Promise<void>((resolve, reject) => {
-                const args = [
+                const args: string[] = [
                     '-i', segment.audioFile,
                     '-ar', '44100',
                     '-ac', '2',
@@ -163,7 +162,6 @@ export class VideoService {
     
     public static calculateNumberOfSegments(duration: number, settings: Settings) {
         const batchWindowDuration = settings.batchWindowDuration || 15;
-        const framesInBatch = settings.framesInBatch || 10;
         const totalBatches = Math.ceil(duration/ batchWindowDuration);
         return totalBatches;
     }
