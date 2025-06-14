@@ -6,6 +6,8 @@ import SettingsViewer from '@components/SettingsViewer.vue';
 import Tabs from '@components/Tabs.vue'; // Added import
 import BatchMode from '@components/BatchMode.vue'; // Added import
 import SystemStatus from '@components/SystemStatus.vue'
+import { useI18n } from 'vue-i18n'
+const { t } = useI18n() 
 
 const settingsStore = useSettingsStore();
 const showOnboarding = computed(() => !settingsStore.isInitialized);

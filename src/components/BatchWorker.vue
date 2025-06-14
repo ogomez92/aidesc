@@ -1,17 +1,17 @@
 <script setup lang="ts">
 import VisionSegment from '@interfaces/vision_segment';
 import { VideoService } from '@services/video';
-import { ref, onMounted, defineProps } from 'vue';
+import { ref, Ref, onMounted, defineProps } from 'vue';
 import { VideoProcessor } from '@domain/video_processor';
 import { useSettingsStore } from '@managers/store';
 import VisionProcessingResult from '@interfaces/vision_processing_result';
 import ToastMessage from '@components/ToastMessage.vue';
 import EventType from '@enums/event_type';
-import NotificationBar from '@components/notificationBar.vue';
+import NotificationBar from '@components/NotificationBar.vue';
 
 const settingsStore = useSettingsStore();
 
-const segmentsArray: ref<VisionSegment[]> = ref([]);
+const segmentsArray: Ref<VisionSegment[]> = ref([]);
 const fileDuration = ref<string | null>(null)
 const toastType = ref<'warning' | 'info'>('info');
 const toastMessage = ref('');
@@ -25,7 +25,7 @@ const dismissToast = () => {
 const saveSegmentsToFile = (async () => {
     const fs = await import('fs');
     try {
-        const filePath = await window.ipcRenderer.saveFileDialog();
+        const filePath = await window.ipcRenderer.saveFileDialog(`segments_${props.file}`);
         if (filePath) {
             fs.writeFileSync(filePath, JSON.stringify(segmentsArray.value, null, 2), { encoding: 'utf8' });
 
@@ -67,14 +67,18 @@ onMounted(async () => {
             notificationMessage.value = notification;
             showNotification.value = true;
         });
-        videoProcessor.on(EventType.Complete, (notification: VisionProcessingResult) => {
-            notificationMessage.value = `Generated ${notification.segments.length} vision segments successfully!`;
+        videoProcessor.on(EventType.Complete, (/*notification: VisionProcessingResult*/) => {
+            /*notificationMessage.value = `Generated ${notification.segments.length} vision segments successfully!`;
             segmentsArray.value = notification.segments;
-            showNotification.value = true;
+            showNotification.value = true;*/
         })
 
         try {
-            await videoProcessor.generateVisionSegments(props.file);
+            const result: VisionProcessingResult = await videoProcessor.generateVisionSegments(props.file);
+            notificationMessage.value = `Generated ${result.segments.length} vision segments successfully!`;
+            segmentsArray.value = result.segments;
+            showNotification.value = true;
+
         } catch (error) {
             toastMessage.value = `Failed to generate description segments. Error was: ${error}`;
             toastType.value = "warning";

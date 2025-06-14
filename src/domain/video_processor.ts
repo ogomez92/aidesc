@@ -46,11 +46,23 @@ export class VideoProcessor extends EventEmitter {
         });
     }
 
-    public async combineAudioSegments(segments: AudioSegment[], outputPath: string, videoDuration: number, tempDir: string): Promise<string> {
+    public async combineAudioSegments(segments: AudioSegment[], outputPath: string): Promise<string> {
         const path = await import('path');
         const fs = await import('fs');
-        const silentBasePath = path.join(tempDir, 'silent_base.wav');
 
+        const tempDir: string = await window.ipcRenderer.invoke('get-temp-path', 'aidesc_temp');
+        const outputDir: string = path.join(await window.ipcRenderer.invoke('get-temp-path', 'aidesc_outputs'));
+
+        if (!fs.existsSync(tempDir)) {
+            fs.mkdirSync(tempDir, { recursive: true });
+        }
+        if (!fs.existsSync(outputDir)) {
+            fs.mkdirSync(outputDir, { recursive: true });
+        }
+
+        const videoDuration = segments.reduce((max, segment) => Math.max(max, segment.startTime + (segment.duration || 0)), 0);
+        const silentBasePath = path.join(tempDir, 'silent_base.wav');
+        this.emit(EventType.Progress, `Combining audio segments into ${outputPath}...`);
         // Create silent base track
         await new Promise<void>((resolve, reject) => {
             const args = [
@@ -60,6 +72,7 @@ export class VideoProcessor extends EventEmitter {
                 '-c:a', 'pcm_s16le',
                 silentBasePath
             ];
+
             try {
                 const cliHelper = new CliHelper('ffmpeg', args);
                 cliHelper.executeSync();
@@ -162,12 +175,12 @@ export class VideoProcessor extends EventEmitter {
 
     public async generateVisionSegments(
         videoFilePath: string,
-    ): Promise<void> {
+    ): Promise<VisionProcessingResult> {
         const fs = await import('fs');
         const path = await import('path');
 
-        const tempDir: string = await window.ipcRenderer.invoke('get-temp-path');
-        const outputDir: string = path.join(await window.ipcRenderer.invoke('get-temp-path', 'temp'));
+        const tempDir: string = await window.ipcRenderer.invoke('get-temp-path', 'aidesc_temp');
+        const outputDir: string = path.join(await window.ipcRenderer.invoke('get-temp-path', 'aidesc_outputs'));
 
         if (!fs.existsSync(tempDir)) {
             fs.mkdirSync(tempDir, { recursive: true });
@@ -243,18 +256,18 @@ export class VideoProcessor extends EventEmitter {
 
         this.emit(EventType.Complete, result);
 
+        return result;
     }
 
-    /*
+
     public async generateTtsSegments(
-        videoFilePath: string,
-        segments: VisionSegment[],
-    ): Promise<ProcessingResult> {
+        visionSegments: VisionSegment[],
+    ): Promise<TTSProcessingResult> {
         const fs = await import('fs');
         const path = await import('path');
 
-        const tempDir: string = await window.ipcRenderer.invoke('get-temp-path');
-        const outputDir: string = path.join(await window.ipcRenderer.invoke('get-temp-path', 'temp'));
+        const tempDir: string = await window.ipcRenderer.invoke('get-temp-path', 'aidesc_temp');
+        const outputDir: string = path.join(await window.ipcRenderer.invoke('get-temp-path', 'aidesc_outputs'));
 
         if (!fs.existsSync(tempDir)) {
             fs.mkdirSync(tempDir, { recursive: true });
@@ -262,8 +275,6 @@ export class VideoProcessor extends EventEmitter {
         if (!fs.existsSync(outputDir)) {
             fs.mkdirSync(outputDir, { recursive: true });
         }
-
-        const videoDuration = await VideoService.getDuration(videoFilePath);
 
         const ttsProvider = this.settings.ttsProviders.find(p => p.name === this.settings.ttsProvider);
 
@@ -273,91 +284,43 @@ export class VideoProcessor extends EventEmitter {
 
         const tts = TTSProviderFactory.createProvider(this.settings.ttsProvider, ttsProvider);
 
-        // Process in batch mode (simplified for Vue integration)
-        const batchWindowDuration = this.settings.batchWindowDuration || 15;
-        const framesInBatch = this.settings.framesInBatch || 10;
-        const totalBatches = Math.floor(videoDuration / batchWindowDuration);
-
         const audioSegments: AudioSegment[] = [];
         const stats: ProcessingStats = {
             totalFrames: 0,
-            totalBatches: totalBatches,
+            totalBatches: 0,
             totalVisionInputCost: 0,
             totalVisionOutputCost: 0,
             totalTTSCost: 0,
             totalCost: 0
         };
 
-        let lastBatchContext: BatchContext | null = null;
-        let currentTimePosition = 0;
-
-        for (let batchIndex = 0; batchIndex < totalBatches; batchIndex++) {
-            const batchStart = batchIndex * batchWindowDuration;
-            const batchEnd = batchStart + batchWindowDuration;
-
-            if (batchEnd > videoDuration) break;
-
-            onProgress?.(15 + (batchIndex / totalBatches) * 70, `Processing batch ${batchIndex + 1}/${totalBatches}`);
-
-            // Capture frames for this batch
-            const framePaths: string[] = [];
-            for (let i = 0; i < framesInBatch; i++) {
-                const t = batchStart + (i * batchWindowDuration) / framesInBatch;
-                const frameFilePath = path.join(tempDir, `batch_${batchIndex}_frame_${i}.jpg`);
-                await this.captureFrame(videoFilePath, t, frameFilePath);
-                framePaths.push(frameFilePath);
-            }
-
-            // Get description from vision AI
-            const visionResult: VisionResult = await vision.describeBatch(framePaths, lastBatchContext, this.settings.batchPrompt);
-
-            // Update stats
-            stats.totalVisionInputCost += visionResult.usage.inputTokens;
-            stats.totalVisionOutputCost += visionResult.usage.outputTokens;
-            stats.totalCost += visionResult.usage.totalTokens;
-
-            // Generate TTS
+        let batchIndex = -1;
+        for (const segment of visionSegments) {
+            batchIndex++;
             const audioFilePath = path.join(tempDir, `batch_audio_${batchIndex}.mp3`);
-            const ttsResult = await tts.textToSpeech(visionResult.description, audioFilePath);
+            this.emit(EventType.Progress, `Generating TTS for segment ${batchIndex + 1} of ${visionSegments.length}...`);
+            const ttsResult = await tts.textToSpeech(segment.description, audioFilePath);
 
-            stats.totalTTSCost += ttsResult.cost;
+            stats.totalTTSCost += segment.description.length;
 
             // Store segment
             audioSegments.push({
                 audioFile: audioFilePath,
-                startTime: currentTimePosition,
+                startTime: segment.startTime,
                 duration: ttsResult.duration,
-                description: visionResult.description
-            });
-
-            // Update positions and context
-            currentTimePosition += ttsResult.duration + 0.5; // 0.5s buffer
-            lastBatchContext = {
-                lastDescription: visionResult.description,
-                lastFramePaths: framePaths.slice(-2)
-            };
-
-            // Clean up frame files
-            framePaths.forEach(fp => {
-                if (fs.existsSync(fp)) {
-                    fs.unlinkSync(fp);
-                }
+                description: segment.description
             });
         }
 
-        onProgress?.(85, 'Combining audio segments');
-
-        // Combine audio segments
-        const outputAudioPath = path.join(outputDir, `${path.basename(videoFilePath, path.extname(videoFilePath))}_description.mp3`);
-        await this.combineAudioSegments(audioSegments, outputAudioPath, videoDuration, tempDir);
-
-        onProgress?.(100, 'Audio description complete');
-
-        return {
-            videoFile: videoFilePath,
-            audioDescriptionFile: outputAudioPath,
+        const outputAudioPath = path.join(outputDir, 'combined_audio_segments.mp3');
+        await this.combineAudioSegments(audioSegments, outputAudioPath);
+        const result: TTSProcessingResult = {
+            audioDescriptionFilePath: outputAudioPath,
+            audioSegments: audioSegments,
             stats
         }
+        this.emit(EventType.Complete, result);
+
+        return result;
     }
-        */
 }

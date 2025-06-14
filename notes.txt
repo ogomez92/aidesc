@@ -31,3 +31,9 @@ in fact we could take most things away from settings and have them displayed in 
 
 in continuous mode and batch mode there will be a record from cam button.
 in continuous mode you should be able to update the prompt at will. See if it's possible not to describe if the app is focused.
+
+test if ffmpeg is not installed create a link to some install resources like homebrew and winget.
+
+we will need to have a stats display, to display the values that are not 0.
+
+ensure that folders are cleaned up, in local temp
