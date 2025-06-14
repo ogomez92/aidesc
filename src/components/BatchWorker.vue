@@ -23,9 +23,11 @@ const dismissToast = () => {
 };
 
 const saveSegmentsToFile = (async () => {
+    const path = await import('path');
+    
     const fs = await import('fs');
     try {
-        const filePath = await window.ipcRenderer.saveFileDialog(`segments_${props.file}`);
+        const filePath = await window.ipcRenderer.saveFileDialog(`segments_${path.basename(props.file,path.extname(props.file))}.json`);
         if (filePath) {
             fs.writeFileSync(filePath, JSON.stringify(segmentsArray.value, null, 2), { encoding: 'utf8' });
 
@@ -55,7 +57,7 @@ onMounted(async () => {
     if (props.segments) {
         try {
             const segmentsData = JSON.parse(fs.readFileSync(props.segments, 'utf-8'));
-            segmentsArray.value = segmentsData['segments'];
+            segmentsArray.value = segmentsData;
         } catch (error) {
             console.error('Error reading segments file:', error);
             toastMessage.value = `Failed to load segments. Error was: ${error}`;
@@ -67,24 +69,20 @@ onMounted(async () => {
             notificationMessage.value = notification;
             showNotification.value = true;
         });
-        videoProcessor.on(EventType.Complete, (/*notification: VisionProcessingResult*/) => {
-            /*notificationMessage.value = `Generated ${notification.segments.length} vision segments successfully!`;
-            segmentsArray.value = notification.segments;
-            showNotification.value = true;*/
-        })
 
         try {
             const result: VisionProcessingResult = await videoProcessor.generateVisionSegments(props.file);
             notificationMessage.value = `Generated ${result.segments.length} vision segments successfully!`;
             segmentsArray.value = result.segments;
             showNotification.value = true;
-
         } catch (error) {
             toastMessage.value = `Failed to generate description segments. Error was: ${error}`;
             toastType.value = "warning";
             showToast.value = true;
         }
     }
+
+    
 })
 </script>
 

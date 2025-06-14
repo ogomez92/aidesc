@@ -83,49 +83,52 @@ const openFile = async () => {
           showToast.value = true;
         }
         const segments = VideoService.calculateNumberOfSegments(duration, settings);
-
-        confirmMessage.value = `The video has been successfully processed. It will be divided into ${segments} segments for description. Please press continue to start generating vision segments with ${settings.visionProvider} or import a previously generated segments.json file`;
-      } catch (error) {
-        toastMessage.value = `Failed to get video duration. The file type might not be supported by ffmpeg. The error was: ${error}`;
-        toastType.value = "warning";
-        showToast.value = true;
-        selectedFile.value = '';
+        if (selectedSegmentsFile.value !== null) {
+          confirmMessage.value = `The video has been successfully processed. It will be divided into ${segments} segments for description. Please press continue to start generating vision segments with ${settings.visionProvider} or import a previously generated segments.json file`;
+        }
+        else {
+          confirmMessage.value = `The video has been loaded and segments imported. Press continue to generate tts segments with ${settings.ttsProvider}`;
+        }
+        } catch (error) {
+          toastMessage.value = `Failed to get video duration. The file type might not be supported by ffmpeg. The error was: ${error}`;
+          toastType.value = "warning";
+          showToast.value = true;
+          selectedFile.value = '';
+        }
       }
-    }
   } catch (error) {
-    toastMessage.value = `Failed to open file. The error was: ${error}`;
-    toastType.value = "warning";
-    showToast.value = true;
-    selectedFile.value = '';
+      toastMessage.value = `Failed to open file. The error was: ${error}`;
+      toastType.value = "warning";
+      showToast.value = true;
+      selectedFile.value = '';
+    }
   }
-}
 
 const openSegmentsFile = async () => {
-  const fs = await import('fs');
+    const fs = await import('fs');
 
-  try {
-    const filePath = await window.ipcRenderer.openFileDialog()
-    selectedSegmentsFile.value = filePath
-    if (filePath) {
-      const data = fs.readFileSync(filePath, 'utf8');
-      const segmentsData = JSON.parse(data);
+    try {
+      const filePath = await window.ipcRenderer.openFileDialog()
+      if (filePath) {
+        const data = fs.readFileSync(filePath, 'utf8');
+        const segmentsData: VisionSegment[] = JSON.parse(data);
 
-      if (Array.isArray(segmentsData.segments)) {
-        const segments: VisionSegment[] = segmentsData.segments;
-        toastMessage.value = `Successfully imported ${segments.length} audio segments from ${filePath}`;
-        toastType.value = "info";
-        showToast.value = true;
-      } else {
-        throw new Error('Invalid segments file format. Expected an array of segments.');
+        if (Array.isArray(segmentsData)) {
+          selectedSegmentsFile.value = filePath
+          toastMessage.value = `Successfully imported ${segmentsData.length} audio segments from ${filePath}`;
+          toastType.value = "info";
+          showToast.value = true;
+        } else {
+          throw new Error('Invalid segments file format. Expected an array of segments.');
+        }
       }
+    } catch (error) {
+      selectedSegmentsFile.value = null;
+      toastMessage.value = `Failed to import segments file. The error was: ${error}`;
+      toastType.value = "warning";
+      showToast.value = true;
     }
-  } catch (error) {
-    selectedSegmentsFile.value = null;
-    toastMessage.value = `Failed to import segments file. The error was: ${error}`;
-    toastType.value = "warning";
-    showToast.value = true;
   }
-}
 
 </script>
 

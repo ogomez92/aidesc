@@ -14,7 +14,7 @@ const showOnboarding = computed(() => !settingsStore.isInitialized);
 
 // Tab configuration
 const tabs = [
-    { title: 'Full Video mode', component: BatchMode},
+    { title: 'Generate Description', component: BatchMode},
     { title: 'Settings', component: SettingsViewer },
 ];
 

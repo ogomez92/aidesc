@@ -19,7 +19,7 @@ window.ipcRenderer = {
     return ipcRenderer.invoke(channel, ...omit)
   },
   openFileDialog: () => ipcRenderer.invoke('dialog:openFile'),
-  saveFileDialog: () => ipcRenderer.invoke('dialog:saveFile'),
+  saveFileDialog: (filePath: string) => ipcRenderer.invoke('dialog:saveFile', filePath),
   // You can expose other APIs you need here.
   // ...
 }
