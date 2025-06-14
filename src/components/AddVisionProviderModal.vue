@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, watch, nextTick } from 'vue';
+import { ref, watch } from 'vue';
 import { VisionModels } from '../enums/models';
 
 // Props
@@ -22,8 +22,8 @@ interface Emits {
 
 const emit = defineEmits<Emits>();
 
-// Template ref for auto-focus
-const dialogPanel = ref<HTMLDivElement | null>(null);
+// Ref for dialog element
+const dialogRef = ref<HTMLDialogElement | null>(null);
 
 // Form data
 const newVisionProvider = ref({
@@ -55,70 +55,61 @@ const closeModal = () => {
   emit('close');
 };
 
-// Focus first radio button when modal opens
-const focusDialogPanel = () => {
-  dialogPanel.value.focus();
-  console.log(dialogPanel.value);
-};
-
-// Watch for visibility changes to focus
-watch(() => props.isVisible, async (visible) => {
-  await nextTick();
+// Watch for visibility changes to open/close dialog
+watch(() => props.isVisible, (visible) => {
+  const dialog = dialogRef.value;
+  if (!dialog) return;
   if (visible) {
-    focusDialogPanel();
+    if (!dialog.open) dialog.showModal();
+  } else {
+    if (dialog.open) dialog.close();
   }
 });
-
-
 </script>
 
-
 <template>
-  <div v-if="isVisible" class="modal-overlay" @click.self="closeModal">
-    <div tabindex="-1" ref="dialogPanel" class="modal-content" role="dialog" aria-labelledby="vision-modal-title"
-      aria-modal="true">
-      <h3 id="vision-modal-title" class="modal-title">Add Vision Provider</h3>
-      <form @submit.prevent="addVisionProvider">
-        <div class="form-group">
-          <fieldset>
-            <legend class="form-label">Provider Name</legend>
-            <div class="radio-group">
-              <label v-for="(option) in visionModelOptions" :key="option" class="radio-label">
-                <input v-model="newVisionProvider.name" :value="option.toLowerCase()" type="radio"
-                  name="vision-provider-name" class="form-radio" required />
-                {{ option }}
-              </label>
-            </div>
-          </fieldset>
-        </div>
+  <dialog ref="dialogRef" class="modal-content" @close="closeModal">
+    <h3 id="vision-modal-title" class="modal-title">Add Vision Provider</h3>
+    <form @submit.prevent="addVisionProvider">
+      <div class="form-group">
+        <fieldset>
+          <legend class="form-label">Provider Name</legend>
+          <div class="radio-group">
+            <label v-for="(option) in visionModelOptions" :key="option" class="radio-label">
+              <input v-model="newVisionProvider.name" :value="option.toLowerCase()" type="radio"
+                name="vision-provider-name" class="form-radio" required />
+              {{ option }}
+            </label>
+          </div>
+        </fieldset>
+      </div>
 
-        <div class="form-group">
-          <label for="vision-apikey" class="form-label">API Key</label>
-          <input aria-required id="vision-apikey" v-model="newVisionProvider.apiKey" type="password" class="form-input"
-            placeholder="API key" />
-        </div>
+      <div class="form-group">
+        <label for="vision-apikey" class="form-label">API Key</label>
+        <input aria-required id="vision-apikey" v-model="newVisionProvider.apiKey" type="password" class="form-input"
+          placeholder="API key" />
+      </div>
 
-        <div class="form-group">
-          <label for="vision-model" class="form-label">Model</label>
-          <input id="vision-model" v-model="newVisionProvider.model" type="text" required class="form-input"
-            placeholder="e.g., gpt-4o, gemini-2.0-flash" />
-        </div>
+      <div class="form-group">
+        <label for="vision-model" class="form-label">Model</label>
+        <input id="vision-model" v-model="newVisionProvider.model" type="text" required class="form-input"
+          placeholder="e.g., gpt-4o, gemini-2.0-flash" />
+      </div>
 
-        <div class="form-group">
-          <label for="vision-tokens" class="form-label">Max Tokens</label>
-          <input id="vision-tokens" v-model.number="newVisionProvider.maxTokens" type="number" min="1"
-            class="form-input" />
-        </div>
+      <div class="form-group">
+        <label for="vision-tokens" class="form-label">Max Tokens</label>
+        <input id="vision-tokens" v-model.number="newVisionProvider.maxTokens" type="number" min="1"
+          class="form-input" />
+      </div>
 
-        <div class="modal-actions">
-          <button type="submit" class="btn btn-primary">Add Provider</button>
-          <button type="button" @click="closeModal" class="btn btn-secondary">
-            Cancel
-          </button>
-        </div>
-      </form>
-    </div>
-  </div>
+      <div class="modal-actions">
+        <button type="submit" class="btn btn-primary">Add Provider</button>
+        <button type="button" @click="closeModal" class="btn btn-secondary">
+          Cancel
+        </button>
+      </div>
+    </form>
+  </dialog>
 </template>
 
 <style scoped>

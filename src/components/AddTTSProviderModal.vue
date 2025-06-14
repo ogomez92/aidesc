@@ -1,144 +1,129 @@
-        <script setup lang="ts">
-        import { ref, nextTick, watch } from 'vue';
-        import { TtsModels } from '../enums/models';
+<script setup lang="ts">
+import { ref, watch } from 'vue';
+import { TtsModels } from '../enums/models';
 
-        // Props
-        interface Props {
-          isVisible: boolean;
-        }
+// Props
+interface Props {
+  isVisible: boolean;
+}
 
-        const props = defineProps<Props>();
+const props = defineProps<Props>();
 
-        // Emits
-        interface Emits {
-          (e: 'close'): void;
-          (e: 'add-provider', provider: {
-            name: string;
-            apiKey: string;
-            model: string;
-            speedFactor: number;
-            voice: string;
-          }): void;
-        }
+// Emits
+interface Emits {
+  (e: 'close'): void;
+  (e: 'add-provider', provider: {
+    name: string;
+    apiKey: string;
+    model: string;
+    speedFactor: number;
+    voice: string;
+  }): void;
+}
 
-        const emit = defineEmits<Emits>();
+const emit = defineEmits<Emits>();
 
-        // Template ref for auto-focus
-        const dialogPanel = ref<HTMLDivElement | null>(null);
+// Ref for dialog element
+const dialogRef = ref<HTMLDialogElement | null>(null);
 
-        // Form data
-        const newTtsProvider = ref({
-          name: '',
-          apiKey: '',
-          speedFactor: 1.0,
-          model: '',
-          voice: ''
-        });
+// Form data
+const newTtsProvider = ref({
+  name: '',
+  apiKey: '',
+  speedFactor: 1.0,
+  model: '',
+  voice: ''
+});
 
-        // Get available model names from enums
-        const ttsModelOptions = Object.values(TtsModels);
+// Get available model names from enums
+const ttsModelOptions = Object.values(TtsModels);
 
-        // Methods
-        const addTtsProvider = () => {
-          if (newTtsProvider.value.name && newTtsProvider.value.model) {
-            emit('add-provider', { ...newTtsProvider.value });
+// Methods
+const addTtsProvider = () => {
+  if (newTtsProvider.value.name && newTtsProvider.value.model) {
+    emit('add-provider', { ...newTtsProvider.value });
 
-            // Reset form
-            newTtsProvider.value = {
-              name: '',
-              apiKey: '',
-              speedFactor: 1.0,
-              model: '',
-              voice: ''
-            };
-          }
-        };
+    // Reset form
+    newTtsProvider.value = {
+      name: '',
+      apiKey: '',
+      speedFactor: 1.0,
+      model: '',
+      voice: ''
+    };
+  }
+};
 
-        const closeModal = () => {
-          emit('close');
-        };
+const closeModal = () => {
+  emit('close');
+};
 
-        const focusDialogPanel = () => {
-          nextTick(() => {
-            dialogPanel.value?.focus();
-          });
-        };
-
-        // Watch for visibility changes to focus
-        watch(() => props.isVisible, (visible) => {
-          if (visible) {
-            focusDialogPanel();
-          }
-        });
+// Watch for visibility changes to open/close dialog
+watch(() => props.isVisible, (visible) => {
+  const dialog = dialogRef.value;
+  if (!dialog) return;
+  if (visible) {
+    if (!dialog.open) dialog.showModal();
+  } else {
+    if (dialog.open) dialog.close();
+  }
+});
 </script>
 
 <template>
-  <div v-if="isVisible" class="modal-overlay" @click.self="closeModal">
-    <div tabindex="-1" ref="dialogPanel" class="modal-content" role="dialog" aria-labelledby="tts-modal-title"
-      aria-modal="true">
-      <h3 id="tts-modal-title" class="modal-title">Add TTS Provider</h3>
-      <form @submit.prevent="addTtsProvider">
-        <div class="form-group">
-          <fieldset>
-            <legend class="form-label">Provider Name</legend>
-            <div class="radio-group">
-              <label v-for="(option) in ttsModelOptions" :key="option" class="radio-label">
-                <input v-model="newTtsProvider.name" :value="option.toLowerCase()" type="radio" name="tts-provider-name"
-                  class="form-radio" required />
-                {{ option }}
-              </label>
-            </div>
-          </fieldset>
-        </div>
+  <dialog ref="dialogRef" class="modal-content" @close="closeModal">
+    <h3 id="tts-modal-title" class="modal-title">Add TTS Provider</h3>
+    <form @submit.prevent="addTtsProvider">
+      <div class="form-group">
+        <fieldset>
+          <legend class="form-label">Provider Name</legend>
+          <div class="radio-group">
+            <label v-for="(option) in ttsModelOptions" :key="option" class="radio-label">
+              <input v-model="newTtsProvider.name" :value="option.toLowerCase()" type="radio" name="tts-provider-name"
+                class="form-radio" required />
+              {{ option }}
+            </label>
+          </div>
+        </fieldset>
+      </div>
 
-        <div class="form-group">
-          <label for="tts-speedfactor" class="form-label">Speed Factor</label>
-          <input id="tts-speedfactor" v-model.number="newTtsProvider.speedFactor" type="number" step="0.1" min="0.1"
-            max="3.0" class="form-input" placeholder="1.0" />
-        </div>
+      <div class="form-group">
+        <label for="tts-speedfactor" class="form-label">Speed Factor</label>
+        <input id="tts-speedfactor" v-model.number="newTtsProvider.speedFactor" type="number" step="0.1" min="0.1"
+          max="3.0" class="form-input" placeholder="1.0" />
+      </div>
 
-        <div class="form-group">
-          <label for="tts-apikey" class="form-label">API Key</label>
-          <input aria-required id="tts-apikey" v-model="newTtsProvider.apiKey" type="password" class="form-input"
-            placeholder="API key" />
-        </div>
+      <div class="form-group">
+        <label for="tts-apikey" class="form-label">API Key</label>
+        <input aria-required id="tts-apikey" v-model="newTtsProvider.apiKey" type="password" class="form-input"
+          placeholder="API key" />
+      </div>
 
-        <div class="form-group">
-          <label for="tts-model" class="form-label">Model</label>
-          <input id="tts-model" v-model="newTtsProvider.model" type="text" required class="form-input"
-            placeholder="e.g., tts-1-hd, eleven_multilingual_v2" />
-        </div>
+      <div class="form-group">
+        <label for="tts-model" class="form-label">Model</label>
+        <input id="tts-model" v-model="newTtsProvider.model" type="text" required class="form-input"
+          placeholder="e.g., tts-1-hd, eleven_multilingual_v2" />
+      </div>
 
-        <div class="form-group">
-          <label for="tts-voice" class="form-label">Voice</label>
-          <input id="tts-voice" v-model="newTtsProvider.voice" type="text" class="form-input"
-            placeholder="e.g., alloy, nova" />
-        </div>
+      <div class="form-group">
+        <label for="tts-voice" class="form-label">Voice</label>
+        <input id="tts-voice" v-model="newTtsProvider.voice" type="text" class="form-input"
+          placeholder="e.g., alloy, nova" />
+      </div>
 
-        <div class="modal-actions">
-          <button type="submit" class="btn btn-primary">Add Provider</button>
-          <button type="button" @click="closeModal" class="btn btn-secondary">
-            Cancel
-          </button>
-        </div>
-      </form>
-    </div>
-  </div>
+      <div class="modal-actions">
+        <button type="submit" class="btn btn-primary">Add Provider</button>
+        <button type="button" @click="closeModal" class="btn btn-secondary">
+          Cancel
+        </button>
+      </div>
+    </form>
+  </dialog>
 </template>
 
 <style scoped>
 .modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(0, 0, 0, 0.6);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-  backdrop-filter: blur(4px);
+  display: none;
 }
 
 .modal-content {
@@ -261,6 +246,19 @@ legend {
 .btn-secondary {
   background-color: #95a5a6;
   color: white;
+}
+
+.btn-secondary:hover {
+  background-color: #7f8c8d;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(149, 165, 166, 0.3);
+}
+
+@media (max-width: 768px) {
+  .modal-content {
+    margin: 1rem;
+    max-width: calc(100% - 2rem);
+  }
 }
 
 .btn-secondary:hover {
