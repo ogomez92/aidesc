@@ -51,9 +51,9 @@ const saveCombinedAudio= (async () => {
     const pathToVideo = await videoProcessor.combineAudioWithVideo(props.file, audioTrack.value)
 
     try {
-        const filePath = await window.ipcRenderer.saveFileDialog(`described_${path.basename(props.file, path.extname(props.file))}.mp4`);
+        const filePath = await window.ipcRenderer.saveFileDialog(`${path.basename(props.file, path.extname(props.file))}_described_mix.mp4`);
         if (filePath) {
-            await fs.promises.copyFile(audioTrack.value, filePath);
+            await fs.promises.copyFile(pathToVideo, filePath);
             toastMessage.value = `Audio track saved!`;
             toastType.value = "info";
             showToast.value = true;

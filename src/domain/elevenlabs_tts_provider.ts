@@ -7,6 +7,7 @@ import { VideoService } from "@services/video";
 
 export class ElevenLabsTTSProvider extends TTSProvider {
     private eleven: ElevenLabsClient;
+    private previousText = '';
 
     constructor(config: TTSProviderSettings) {
         super(config);
@@ -15,7 +16,7 @@ export class ElevenLabsTTSProvider extends TTSProvider {
         });
     }
 
-    async textToSpeech(text: string, outputPath: string): Promise<TTSResult> {
+    async textToSpeech(text: string, outputPath: string,): Promise<TTSResult> {
         const fs = await import('fs');
 
         try {
@@ -25,11 +26,12 @@ export class ElevenLabsTTSProvider extends TTSProvider {
                 enableLogging: false,
                 outputFormat: 'mp3_44100_128',
                 text,
+                previousText: this.previousText,
                 modelId: this.config.model,
             });
-            
+
             const fileStream = fs.createWriteStream(tempOutputPath);
-console.log(inspect(audio));
+            console.log(inspect(audio));
             audio.pipe(fileStream); await new Promise<void>((resolve, reject) => {
                 fileStream.on('finish', () => resolve());
                 fileStream.on('error', reject);
@@ -45,6 +47,8 @@ console.log(inspect(audio));
 
             const audioDuration = await VideoService.getDuration(outputPath);
 
+            this.previousText = text;
+            
             return {
                 duration: audioDuration,
                 cost: text.length

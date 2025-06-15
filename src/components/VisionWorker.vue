@@ -27,7 +27,7 @@ const saveSegmentsToFile = (async () => {
 
     const fs = await import('fs');
     try {
-        const filePath = await window.ipcRenderer.saveFileDialog(`segments_${path.basename(props.file, path.extname(props.file))}.json`);
+        const filePath = await window.ipcRenderer.saveFileDialog(`${path.basename(props.file, path.extname(props.file))}_description.json`);
         if (filePath) {
             fs.writeFileSync(filePath, JSON.stringify(segmentsArray.value, null, 2), { encoding: 'utf8' });
 

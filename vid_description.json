@@ -1,0 +1,22 @@
+[
+  {
+    "startTime": 0,
+    "description": "A person plays a racing video game on a monitor, steering through turns and following the race track closely."
+  },
+  {
+    "startTime": 10,
+    "description": "The player accelerates along a straight section of the race track, shifts up through gears, and is approached and overtaken by a red car on the left."
+  },
+  {
+    "startTime": 20,
+    "description": "The player continues through a right turn, shifting gears and accelerating as buildings and colored curbs pass by on the left."
+  },
+  {
+    "startTime": 30,
+    "description": "The player continues accelerating while taking a long right turn on the virtual race track, shifting gears and moving the car onto a straight section."
+  },
+  {
+    "startTime": 40,
+    "description": "The car in the game approaches the edge of the track, steering closer to the red-and-green striped curb."
+  }
+]

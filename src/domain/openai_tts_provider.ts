@@ -24,7 +24,7 @@ export class OpenAITTSProvider extends TTSProvider {
                 input: text,
                 voice: this.config.voice,
                 response_format: 'mp3',
-                instructions: 'Voice: VoiceOver like, professional, narration. Clear, used for audio descriptions in a video.'
+                instructions: 'Voice: VoiceOver like, professional, fast talking and concise. Narration. Clear, used for audio descriptions in a video. Minimize pauses and breathing.'
             });
 
             const buffer = Buffer.from(await mp3.arrayBuffer());

@@ -65,7 +65,7 @@ const openFile = async () => {
         const minutes = Math.floor(duration / 60);
         const seconds = Math.floor(duration % 60);
         fileDuration.value = `Duration: ${minutes} min ${seconds} sec`;
-        if (duration > 20) {
+        if (minutes > 20) {
           toastType.value = "warning";
           toastMessage.value = "Warning: Longer videos are more expensive to describe, especially for voice generation. Consider using a shorter video or using a voice provider that does not require AI."
           showToast.value = true;
@@ -78,14 +78,14 @@ const openFile = async () => {
           toastMessage.value = `Failed to get video duration. The file type might not be supported by ffmpeg. The error was: ${error}`;
           toastType.value = "warning";
           showToast.value = true;
-          selectedFile.value = '';
+          selectedFile.value = null;
         }
       }
   } catch (error) {
       toastMessage.value = `Failed to open file. The error was: ${error}`;
       toastType.value = "warning";
       showToast.value = true;
-      selectedFile.value = '';
+      selectedFile.value = null;
     }
   }
 </script>

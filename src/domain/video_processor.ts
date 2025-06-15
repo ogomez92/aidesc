@@ -235,14 +235,17 @@ export class VideoProcessor extends EventEmitter {
                 this.emit(EventType.Progress, `WARNING: Timeline drift at batch ${batchIndex} is ${timelineDrift.toFixed(2)} seconds.`);
             }
 
-            const batchEnd = idealBatchStart + this.settings.batchWindowDuration;
-            if (batchEnd > videoDuration) break; // Safety check
+            const batchEnd = Math.min(idealBatchStart + this.settings.batchWindowDuration, videoDuration);
 
-            this.emit(EventType.Progress, `Processing batch #${batchIndex}: Original time window ${idealBatchStart}-${batchEnd} sec, scheduled at ${batchStart.toFixed(2)} sec`);
+            if (batchStart >= videoDuration) break;
+
+            this.emit(EventType.Progress, `Processing batch #${batchIndex + 1} of ${totalBatches}...`);
+
             // Capture frames for this batch
             const framePaths: string[] = [];
             for (let i = 0; i < framesInBatch; i++) {
                 const t = idealBatchStart + (i * this.settings.batchWindowDuration) / this.settings.framesInBatch;
+                if (t > videoDuration) break; // safety check
                 const frameFilePath = path.join(tempDir, `batch_${batchIndex}_frame_${i}.jpg`);
                 await this.captureFrame(videoFilePath, t, frameFilePath);
                 framePaths.push(frameFilePath);
@@ -320,21 +323,24 @@ export class VideoProcessor extends EventEmitter {
         };
 
         let batchIndex = -1;
-        for (const segment of visionSegments) {
+        let lastSegmentEndTime = -1;
+        for (const visionSegment of visionSegments) {
             batchIndex++;
             const audioFilePath = path.join(tempDir, `batch_audio_${batchIndex}.mp3`);
-            this.emit(EventType.Progress, `Generating TTS for segment ${batchIndex + 1} of ${visionSegments.length}...`);
-            const ttsResult: TTSResult = await tts.textToSpeech(segment.description, audioFilePath);
+            this.emit(EventType.Progress, `Generating TTS for batch ${batchIndex + 1} of ${visionSegments.length}...`);
+            const ttsResult: TTSResult = await tts.textToSpeech(visionSegment.description, audioFilePath);
 
             stats.totalTTSCost += ttsResult.cost;
+
 
             // Store segment
             audioSegments.push({
                 audioFile: audioFilePath,
-                startTime: segment.startTime,
+                startTime: Math.max(visionSegment.startTime, lastSegmentEndTime),
                 duration: ttsResult.duration,
-                description: segment.description
+                description: visionSegment.description
             });
+            lastSegmentEndTime = ttsResult.duration;
         }
 
         const outputAudioPath = path.join(outputDir, 'combined_audio_segments.mp3');
@@ -362,16 +368,24 @@ export class VideoProcessor extends EventEmitter {
         if (!fs.existsSync(outputDir)) {
             fs.mkdirSync(outputDir, { recursive: true });
         }
-        const outputPath = path.join(outputDir, 'combined_video_with_audio.mp4')
+        const outputPath = path.join(outputDir, 'combined_video_with_audio.mp4');
+
+        if (!fs.existsSync(videoFilePath)) {
+            throw new Error(`Video file does not exist: ${videoFilePath}`);
+        }
+        if (!fs.existsSync(audioFilePath)) {
+            throw new Error(`Audio file does not exist: ${audioFilePath}`);
+        }
 
         const args: string[] = [
             '-y',
             '-i', videoFilePath,
             '-i', audioFilePath,
+            '-filter_complex', '[0:a]volume=[a1];[1:a]volume=0.8[a2];[a1][a2]amix=inputs=2:duration=longest[aout]',
+            '-map', '0:v',  // Map the video stream from the first input
+            '-map', '[aout]', // Map the mixed audio created in the filter complex
             '-c:v', 'copy',
             '-c:a', 'aac',
-            '-map', '0:v',
-            '-map', '1:a',
             outputPath
         ];
 

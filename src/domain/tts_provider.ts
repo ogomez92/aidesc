@@ -28,24 +28,4 @@ export abstract class TTSProvider {
             cliHelper.execute();
         });
     }
-
-    async createSilentAudio(outputPath: string, duration: number): Promise<void> {
-        const args = [
-            '-f', 'lavfi',
-            '-y',
-            '-i', 'anullsrc=r=24000:cl=mono',
-            '-t', duration.toString(),
-            '-c:a', 'libmp3lame',
-            '-q:a', '9',
-            outputPath
-        ];
-
-        const cliHelper = new CliHelper('ffmpeg', args);
-
-        return new Promise((resolve, reject) => {
-            cliHelper.on('success', resolve);
-            cliHelper.on('error', reject);
-            cliHelper.execute();
-        });
-    }
 }

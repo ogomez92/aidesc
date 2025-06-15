@@ -43,3 +43,5 @@ export as srt
 get the new voie openAI apis to have a nice voie prompt.
 get a way to make available models and voices in tts a combo box, possibly also for elevenlabs? but mainly OpenAI
 have a helper class with getAvailableModels getAvailableVoices.
+
+continous mode settings: prompt, capture image every, describe every, and method. No tts, just clipboard.
