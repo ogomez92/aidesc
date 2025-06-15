@@ -39,11 +39,12 @@ export default [
     },
   },
   {
-    files: ["src/**/*.{ts,tsx}"],
+    files: ["src/**/*.{ts,vue}"],
     languageOptions: {
       parser: tseslint.parser,
       parserOptions: {
         project: './tsconfig.json',
+        extraFileExtensions: ['.vue'],
       },
     },
   },

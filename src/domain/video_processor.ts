@@ -12,6 +12,7 @@ import { VideoService } from '@services/video';
 import VisionSegment from '@interfaces/vision_segment';
 import TTSProcessingResult from '@interfaces/tts_processing_result';
 import EventType from '@enums/event_type';
+import TTSResult from '@interfaces/tts_result';
 
 export class VideoProcessor extends EventEmitter {
     private settings: Settings;
@@ -22,6 +23,7 @@ export class VideoProcessor extends EventEmitter {
     }
     public async captureFrame(videoFilePath: string, timePosition: number, outputPath: string, lowQuality: boolean = true): Promise<void> {
         const args: string[] = [
+            '-y',
             '-ss', timePosition.toString(),
             '-i', videoFilePath,
             '-frames:v', '1',
@@ -50,8 +52,8 @@ export class VideoProcessor extends EventEmitter {
         const path = await import('path');
         const fs = await import('fs');
 
-        const tempDir: string = await window.ipcRenderer.invoke('get-temp-path', 'aidesc_temp');
-        const outputDir: string = path.join(await window.ipcRenderer.invoke('get-temp-path', 'aidesc_outputs'));
+        const tempDir: string = await window.ipcRenderer.invoke('get-temp-path', 'aidesc-temp');
+        const outputDir: string = path.join(await window.ipcRenderer.invoke('get-temp-path', 'aidesc-outputs'));
 
         if (!fs.existsSync(tempDir)) {
             fs.mkdirSync(tempDir, { recursive: true });
@@ -66,6 +68,7 @@ export class VideoProcessor extends EventEmitter {
         // Create silent base track
         await new Promise<void>((resolve, reject) => {
             const args = [
+                '-y',
                 '-f', 'lavfi',
                 '-i', `anullsrc=r=44100:cl=stereo`,
                 '-t', videoDuration.toString(),
@@ -96,6 +99,7 @@ export class VideoProcessor extends EventEmitter {
             // Standardize segment to WAV
             await new Promise<void>((resolve, reject) => {
                 const args: string[] = [
+                    '-y',
                     '-i', segment.audioFile,
                     '-ar', '44100',
                     '-ac', '2',
@@ -107,6 +111,7 @@ export class VideoProcessor extends EventEmitter {
                     cliHelper.executeSync();
                     resolve();
                 } catch (error) {
+                    console.error(`Failed to standardize segment ${segment.audioFile}: ${error instanceof Error ? error.message : 'Unknown error'}`);
                     reject(new Error(`Failed to standardize segment ${segment.audioFile}: ${error instanceof Error ? error.message : 'Unknown error'}`));
                 }
             });
@@ -116,6 +121,7 @@ export class VideoProcessor extends EventEmitter {
                 const delayMs = Math.round(segment.startTime * 1000);
                 const filterComplex = `[1:a]adelay=${delayMs}|${delayMs}[delayed];[0:a][delayed]amix=inputs=2:duration=first:dropout_transition=0:normalize=0[out]`;
                 const args = [
+                    '-y',
                     '-i', currentAudioPath,
                     '-i', standardizedSegment,
                     '-filter_complex', filterComplex,
@@ -128,6 +134,7 @@ export class VideoProcessor extends EventEmitter {
                     cliHelper.executeSync();
                     resolve();
                 } catch (error) {
+                    console.error(`Failed to mix audio segment ${i}: ${error instanceof Error ? error.message : 'Unknown error'}`);
                     reject(new Error(`Failed to mix audio segment ${i}: ${error instanceof Error ? error.message : 'Unknown error'}`));
                 }
             });
@@ -145,6 +152,7 @@ export class VideoProcessor extends EventEmitter {
         if (path.extname(outputPath).toLowerCase() === '.mp3') {
             await new Promise<void>((resolve, reject) => {
                 const args = [
+                    '-y',
                     '-i', currentAudioPath,
                     '-c:a', 'libmp3lame',
                     '-q:a', '2', // Corresponds to -audioQuality(2) for libmp3lame
@@ -155,6 +163,7 @@ export class VideoProcessor extends EventEmitter {
                     cliHelper.executeSync();
                     resolve();
                 } catch (error) {
+                    console.error(`Failed to convert final audio to MP3: ${error instanceof Error ? error.message : 'Unknown error'}`);
                     reject(new Error(`Failed to convert final audio to MP3: ${error instanceof Error ? error.message : 'Unknown error'}`));
                 }
             });
@@ -179,8 +188,8 @@ export class VideoProcessor extends EventEmitter {
         const fs = await import('fs');
         const path = await import('path');
 
-        const tempDir: string = await window.ipcRenderer.invoke('get-temp-path', 'aidesc_temp');
-        const outputDir: string = path.join(await window.ipcRenderer.invoke('get-temp-path', 'aidesc_outputs'));
+        const tempDir: string = await window.ipcRenderer.invoke('get-temp-path', 'aidesc-temp');
+        const outputDir: string = path.join(await window.ipcRenderer.invoke('get-temp-path', 'aidesc-outputs'));
 
         if (!fs.existsSync(tempDir)) {
             fs.mkdirSync(tempDir, { recursive: true });
@@ -214,17 +223,26 @@ export class VideoProcessor extends EventEmitter {
         };
 
         let lastBatchContext: BatchContext | null = null;
+        let currentTimePosition = 0;
+        let timelineDrift = 0;
+        const maxAllowableDrift = this.settings.batchWindowDuration * 0.5; // Maximum drift of 50% of batch window
 
         for (let batchIndex = 0; batchIndex < totalBatches; batchIndex++) {
-            const batchStart = batchIndex * batchWindowDuration;
-            const batchEnd = Math.min(batchStart + batchWindowDuration, videoDuration);
+            const idealBatchStart = batchIndex * this.settings.batchWindowDuration;
+            const batchStart = currentTimePosition;
+            timelineDrift = batchStart - idealBatchStart;
+            if (Math.abs(timelineDrift) > maxAllowableDrift) {
+                this.emit(EventType.Progress, `WARNING: Timeline drift at batch ${batchIndex} is ${timelineDrift.toFixed(2)} seconds.`);
+            }
 
-            this.emit(EventType.Progress, `Processing segment ${batchIndex + 1} of ${totalBatches}...`);
+            const batchEnd = idealBatchStart + this.settings.batchWindowDuration;
+            if (batchEnd > videoDuration) break; // Safety check
 
+            this.emit(EventType.Progress, `Processing batch #${batchIndex}: Original time window ${idealBatchStart}-${batchEnd} sec, scheduled at ${batchStart.toFixed(2)} sec`);
             // Capture frames for this batch
             const framePaths: string[] = [];
             for (let i = 0; i < framesInBatch; i++) {
-                const t = batchStart + (i * (batchEnd - batchStart)) / framesInBatch;
+                const t = idealBatchStart + (i * this.settings.batchWindowDuration) / this.settings.framesInBatch;
                 const frameFilePath = path.join(tempDir, `batch_${batchIndex}_frame_${i}.jpg`);
                 await this.captureFrame(videoFilePath, t, frameFilePath);
                 framePaths.push(frameFilePath);
@@ -243,6 +261,13 @@ export class VideoProcessor extends EventEmitter {
 
 
             // Update positions and context
+            currentTimePosition = batchEnd;
+            const nextIdealPosition = (batchIndex + 1) * this.settings.batchWindowDuration;
+            if (currentTimePosition < nextIdealPosition) {
+                console.log(`Batch audio finished before next scheduled batch. Catching up with timeline.`);
+                currentTimePosition = nextIdealPosition;
+                timelineDrift = 0; // Reset drift since we've caught up
+            }
             lastBatchContext = {
                 lastDescription: visionResult.description,
                 lastFramePaths: framePaths.slice(-2)
@@ -266,8 +291,8 @@ export class VideoProcessor extends EventEmitter {
         const fs = await import('fs');
         const path = await import('path');
 
-        const tempDir: string = await window.ipcRenderer.invoke('get-temp-path', 'aidesc_temp');
-        const outputDir: string = path.join(await window.ipcRenderer.invoke('get-temp-path', 'aidesc_outputs'));
+        const tempDir: string = await window.ipcRenderer.invoke('get-temp-path', 'aidesc-temp');
+        const outputDir: string = path.join(await window.ipcRenderer.invoke('get-temp-path', 'aidesc-outputs'));
 
         if (!fs.existsSync(tempDir)) {
             fs.mkdirSync(tempDir, { recursive: true });
@@ -299,9 +324,9 @@ export class VideoProcessor extends EventEmitter {
             batchIndex++;
             const audioFilePath = path.join(tempDir, `batch_audio_${batchIndex}.mp3`);
             this.emit(EventType.Progress, `Generating TTS for segment ${batchIndex + 1} of ${visionSegments.length}...`);
-            const ttsResult = await tts.textToSpeech(segment.description, audioFilePath);
+            const ttsResult: TTSResult = await tts.textToSpeech(segment.description, audioFilePath);
 
-            stats.totalTTSCost += segment.description.length;
+            stats.totalTTSCost += ttsResult.cost;
 
             // Store segment
             audioSegments.push({
@@ -322,5 +347,43 @@ export class VideoProcessor extends EventEmitter {
         this.emit(EventType.Complete, result);
 
         return result;
+    }
+
+    public async combineAudioWithVideo(videoFilePath: string, audioFilePath: string): Promise<string> {
+        const path = await import('path');
+        const fs = await import('fs');
+
+        const tempDir: string = await window.ipcRenderer.invoke('get-temp-path', 'aidesc-temp');
+        const outputDir: string = path.join(await window.ipcRenderer.invoke('get-temp-path', 'aidesc-outputs'));
+
+        if (!fs.existsSync(tempDir)) {
+            fs.mkdirSync(tempDir, { recursive: true });
+        }
+        if (!fs.existsSync(outputDir)) {
+            fs.mkdirSync(outputDir, { recursive: true });
+        }
+        const outputPath = path.join(outputDir, 'combined_video_with_audio.mp4')
+
+        const args: string[] = [
+            '-y',
+            '-i', videoFilePath,
+            '-i', audioFilePath,
+            '-c:v', 'copy',
+            '-c:a', 'aac',
+            '-map', '0:v',
+            '-map', '1:a',
+            outputPath
+        ];
+
+        const cliHelper = new CliHelper('ffmpeg', args);
+
+        return new Promise((resolve, reject) => {
+            try {
+                cliHelper.executeSync(); // executeSync will throw on error
+                resolve(outputPath);
+            } catch (error) {
+                reject(new Error(`Failed to combine video ${videoFilePath} with audio ${audioFilePath}: ${error instanceof Error ? error.message : 'Unknown error'}`));
+            }
+        });
     }
 }

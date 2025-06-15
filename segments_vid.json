@@ -1,10 +1,6 @@
 [
   {
     "startTime": 0,
-    "description": "La imagen se mueve hacia la puerta, enfocando una mochila en el suelo y una caja amarilla, y después gira rápidamente mostrando una parte de la pared y un escritorio iluminado junto a una ventana con cortina azul."
-  },
-  {
-    "startTime": 10,
-    "description": "La cámara se aleja del escritorio, mostrando la pared, pasa por una estantería superior y gira rápidamente hacia la zona de la puerta, donde aparecen una mochila y una caja amarilla en el suelo; después enfoca el telefonillo y la entrada, y finalmente la imagen se vuelve algo borrosa mientras la cámara sigue girando."
+    "description": "The camera moves away from the refrigerator and microwave to focus on the door area, then quickly shifts past a corner and reveals a bright room with a desk, chair, and window before panning down toward a wall."
   }
 ]

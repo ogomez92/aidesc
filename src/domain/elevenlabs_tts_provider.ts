@@ -51,11 +51,6 @@ console.log(inspect(audio));
             };
         } catch (error) {
             throw new Error(`Error generating speech with ElevenLabs: ${error}`);
-            await this.createSilentAudio(outputPath, 1);
-            return {
-                duration: 1,
-                cost: 0
-            };
         }
     }
 }

@@ -61,8 +61,8 @@ const saveSettings = () => {
     settingsStore.setSettings(localSettings.value as Settings);
 
     // Show success toast
-    toastMessage.value = 'Settings saved successfully!';
     toastType.value = 'info';
+    toastMessage.value = 'Settings saved successfully!';
     showToast.value = true;
 };
 
@@ -198,16 +198,6 @@ onMounted(() => {
                             Number of frames to process in each batch
                         </small>
                     </div>
-                    <div class="form-group">
-                        <label for="contextWindow" class="form-label">Context Window Size</label>
-                        <input id="contextWindow" v-model.number="localSettings.contextWindowSize" type="number" min="1"
-                            class="form-input" aria-describedby="contextWindow-desc" />
-                        <small id="contextWindow-desc" class="form-description">
-                            Number of previous frames to include for context (increases AI load the more frames it
-                            includes)
-                        </small>
-                    </div>
-
                 </section>
             </fieldset>
             <!-- Vision Provider Settings -->
@@ -327,24 +317,6 @@ onMounted(() => {
                 <h2 class="section-title">Prompts</h2>
                 <fieldset>
                     <legend>Prompts</legend>
-                    <div class="form-group">
-                        <label for="defaultPrompt" class="form-label">Default Prompt</label>
-                        <textarea id="defaultPrompt" v-model="localSettings.defaultPrompt" rows="4"
-                            class="form-textarea" aria-describedby="defaultPrompt-desc"></textarea>
-                        <small id="defaultPrompt-desc" class="form-description">
-                            The default prompt used for processing
-                        </small>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="changePrompt" class="form-label">Change Prompt</label>
-                        <textarea id="changePrompt" v-model="localSettings.changePrompt" rows="4" class="form-textarea"
-                            aria-describedby="changePrompt-desc"></textarea>
-                        <small id="changePrompt-desc" class="form-description">
-                            Prompt used to describe changes between frames
-                        </small>
-                    </div>
-
                     <div class="form-group">
                         <label for="batchPrompt" class="form-label">Batch Prompt</label>
                         <textarea id="batchPrompt" v-model="localSettings.batchPrompt" rows="4" class="form-textarea"

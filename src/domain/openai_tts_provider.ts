@@ -18,10 +18,13 @@ export class OpenAITTSProvider extends TTSProvider {
     async textToSpeech(text: string, outputPath: string): Promise<TTSResult> {
         const fs = await import('fs');
         try {
-            const tempOutputPath = outputPath.replace(/\.\w+$/, '_temp$&'); const mp3 = await this.openai.audio.speech.create({
+            const tempOutputPath = outputPath.replace(/\.\w+$/, '_temp$&');
+            const mp3 = await this.openai.audio.speech.create({
                 model: this.config.model,
-                voice: this.config.voice as 'alloy' | 'echo' | 'fable' | 'onyx' | 'nova' | 'shimmer',
-                input: text
+                input: text,
+                voice: this.config.voice,
+                response_format: 'mp3',
+                instructions: 'Voice: VoiceOver like, professional, narration. Clear, used for audio descriptions in a video.'
             });
 
             const buffer = Buffer.from(await mp3.arrayBuffer());
@@ -39,15 +42,10 @@ export class OpenAITTSProvider extends TTSProvider {
 
             return {
                 duration: audioDuration,
-                cost: text.length // Cost based on character count
+                cost: Math.ceil(text.length / 1000000) * 12 // 12 dollars per 1m characters.
             };
         } catch (error) {
-            console.error("Error generating speech:", error);
-            await this.createSilentAudio(outputPath, 1);
-            return {
-                duration: 1,
-                cost: 0
-            };
+            throw new Error(`Error generating speech with OpenAI: ${error}`);
         }
     }
 }

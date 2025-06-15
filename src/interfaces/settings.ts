@@ -14,9 +14,6 @@ export interface TTSProviderSettings {
 }
 
 export interface Settings {
-    contextWindowSize: number;
-    defaultPrompt: string;
-    changePrompt: string;
     batchPrompt: string;
     visionProvider: string;
     ttsProvider: string;

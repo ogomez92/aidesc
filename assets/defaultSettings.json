@@ -1,12 +1,9 @@
 {
-  "contextWindowSize": 5,
-  "defaultPrompt": "Describe what you see in this image in 1-2 sentences for someone who cannot see it.",
-  "changePrompt": "Describe what has changed between these frames in 1-2 sentences for someone who cannot see the video. Focus on significant visual changes only. Avoid talking about meta information such as 'in this frame', or 'the significant change is', and merely describe the actual change taking place. Only describe the changes relevant to the last frame. The previous frames are attached for you to build context and build situational awareness. Keep it short and concise, as your text will be used to generate audio description tracks to be played with the video. Describe in spanish (Spain) only.",
+  "batchWindowDuration": 8,
+  "framesInBatch": 10,
   "batchPrompt": "Describe the sequence of frames in this batch over time for someone who cannot see it. Focus on what happens, changes, or stands out visually during these seconds. Keep it to one concise sentence, avoiding words like 'in these frames'—just describe what's happening. Use context from the previous batch if relevant. Keep sentences short and concise. Avoid speculation or overly verbose or unnecessary sentences. Try not to use nested sentences and keep sentences short to help flow. This will be used for audio description and mixed back in with the video file later, so we need to maintain consistency and quick pacing. Avoid using phrases such as 'as evidenced by' or 'suggesting'. Only focus on describing the visual scene. Do not repeat information given in the previous prompt, and focus only on what has changed since that description. Avoid talking about the scene or sequence, simply focus on the action within these frames. The listener knows that this is a video, so we do not need to remind them. Also avoid overusing phrases such as 'the scene shifts', the shifting or perspective change should be evident from the description of the sequence itself. Describe in Spanish (Spain) only.",
   "visionProvider": "openai",
   "visionProviders": [],
   "ttsProvider": "",
-  "ttsProviders": [],
-  "batchWindowDuration": 8,
-  "framesInBatch": 10
+  "ttsProviders": []
 }

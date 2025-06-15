@@ -41,6 +41,30 @@ const saveAudioTrack = (async () => {
     }
 })
 
+const saveCombinedAudio= (async () => {
+    const path = await import('path');
+    const fs = await import('fs');
+
+    showToast.value = true;
+    toastMessage.value = 'combining...';
+    const videoProcessor = new VideoProcessor(settingsStore.settings);
+    const pathToVideo = await videoProcessor.combineAudioWithVideo(props.file, audioTrack.value)
+
+    try {
+        const filePath = await window.ipcRenderer.saveFileDialog(`described_${path.basename(props.file, path.extname(props.file))}.mp4`);
+        if (filePath) {
+            await fs.promises.copyFile(audioTrack.value, filePath);
+            toastMessage.value = `Audio track saved!`;
+            toastType.value = "info";
+            showToast.value = true;
+        }
+    } catch (error) {
+        toastMessage.value = `Failed to save audio track. Error was: ${error}`;
+        toastType.value = "warning";
+        showToast.value = true;
+    }
+})
+
 const props = defineProps<{
     file: string;
     segments: VisionSegment[];
@@ -80,7 +104,8 @@ onMounted(async () => {
         </div>
         <div v-if="audioTrack">
             <p role="alert">Audio track generated!</p>
-            <a href="#" @click.prevent="saveAudioTrack">Download for Later</a>
+            <a href="#" @click.prevent="saveAudioTrack">Download description track</a>
+            <a href="#" @click.prevent="saveCombinedAudio">Download Video with description mix</a>
         </div>
     </div>
     <ToastMessage v-if="showToast" :message="toastMessage" :type="toastType" :visible="showToast"

@@ -15,7 +15,7 @@ export default class CliHelper extends EventEmitter {
     }
 
     public execute(): void {
-        
+
         if (this.process) {
             // Optionally emit an error or throw if execute is called multiple times
             // For now, we allow re-execution if the previous one finished.
@@ -71,6 +71,11 @@ export default class CliHelper extends EventEmitter {
                 throw new Error(`${this.command} exited with code ${result.status}: ${result.stderr}`);
             }
 
+            if (result.status === 0 && result.stderr) {
+                console.error(`${this.command} exited with code 0 but there were some errors: ${result.stderr}`);
+                // throw new Error(`${this.command} exited with code 0 but there were some errors: ${result.stderr}`);
+            }
+            console.log(result.stdout.toString());
             return result.stdout;
         } catch (error) {
             console.error(`Blocking execution error for command ${this.command}`, error);
