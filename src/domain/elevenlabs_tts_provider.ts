@@ -1,3 +1,10 @@
+import { ElevenLabsClient } from "@elevenlabs/elevenlabs-js";
+import { inspect } from 'util';
+import { TTSProvider } from "./tts_provider";
+import { TTSProviderSettings } from "@interfaces/settings";
+import TTSResult from "@interfaces/tts_result";
+import { VideoService } from "@services/video";
+
 export class ElevenLabsTTSProvider extends TTSProvider {
     private eleven: ElevenLabsClient;
 
@@ -9,6 +16,8 @@ export class ElevenLabsTTSProvider extends TTSProvider {
     }
 
     async textToSpeech(text: string, outputPath: string): Promise<TTSResult> {
+        const fs = await import('fs');
+
         try {
             const tempOutputPath = outputPath.replace(/\.\w+$/, '_temp$&');
 
@@ -18,8 +27,9 @@ export class ElevenLabsTTSProvider extends TTSProvider {
                 text,
                 modelId: this.config.model,
             });
-
+            
             const fileStream = fs.createWriteStream(tempOutputPath);
+console.log(inspect(audio));
             audio.pipe(fileStream); await new Promise<void>((resolve, reject) => {
                 fileStream.on('finish', () => resolve());
                 fileStream.on('error', reject);
@@ -33,59 +43,19 @@ export class ElevenLabsTTSProvider extends TTSProvider {
                 fs.renameSync(tempOutputPath, outputPath);
             }
 
-            const audioDuration = await this.getAudioDuration(outputPath);
+            const audioDuration = await VideoService.getDuration(outputPath);
 
             return {
                 duration: audioDuration,
                 cost: text.length
             };
         } catch (error) {
-            console.error("Error generating speech with ElevenLabs:", error);
+            throw new Error(`Error generating speech with ElevenLabs: ${error}`);
             await this.createSilentAudio(outputPath, 1);
             return {
                 duration: 1,
                 cost: 0
             };
         }
-    }
-
-    private async applySpeedFactor(inputPath: string, outputPath: string, speedFactor: number): Promise<void> {
-        return new Promise((resolve, reject) => {
-            ffmpeg(inputPath)
-                .audioFilters(`atempo=${speedFactor}`)
-                .audioCodec('libmp3lame')
-                .audioQuality(2)
-                .output(outputPath)
-                .on('end', () => resolve())
-                .on('error', (err) => reject(err))
-                .run();
-        });
-    }
-
-    private async getAudioDuration(filePath: string): Promise<number> {
-        return new Promise((resolve, reject) => {
-            ffmpeg.ffprobe(filePath, (err, metadata) => {
-                if (err || !metadata?.format?.duration) {
-                    reject(err || new Error('No duration found'));
-                    return;
-                }
-                resolve(metadata.format.duration);
-            });
-        });
-    }
-
-    private async createSilentAudio(outputPath: string, duration: number): Promise<void> {
-        return new Promise((resolve, reject) => {
-            ffmpeg()
-                .input('anullsrc=r=24000:cl=mono')
-                .inputFormat('lavfi')
-                .duration(duration)
-                .audioQuality(9)
-                .audioCodec('libmp3lame')
-                .output(outputPath)
-                .on('end', () => resolve())
-                .on('error', (err) => reject(err))
-                .run();
-        });
     }
 }

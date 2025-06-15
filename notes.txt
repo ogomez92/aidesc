@@ -37,3 +37,9 @@ test if ffmpeg is not installed create a link to some install resources like hom
 we will need to have a stats display, to display the values that are not 0.
 
 ensure that folders are cleaned up, in local temp
+
+export as srt
+
+get the new voie openAI apis to have a nice voie prompt.
+get a way to make available models and voices in tts a combo box, possibly also for elevenlabs? but mainly OpenAI
+have a helper class with getAvailableModels getAvailableVoices.

@@ -4,7 +4,8 @@ import { useSettingsStore } from './managers/store';
 import OnboardingComponent from '@components/OnboardingComponent.vue';
 import SettingsViewer from '@components/SettingsViewer.vue';
 import Tabs from '@components/Tabs.vue'; // Added import
-import BatchMode from '@components/BatchMode.vue'; // Added import
+import VisionGeneration from '@components/VisionGeneration.vue';
+import TtsGeneration from '@components/TtsGeneration.vue';
 import SystemStatus from '@components/SystemStatus.vue'
 import { useI18n } from 'vue-i18n'
 const { t } = useI18n() 
@@ -14,7 +15,8 @@ const showOnboarding = computed(() => !settingsStore.isInitialized);
 
 // Tab configuration
 const tabs = [
-    { title: 'Generate Description', component: BatchMode},
+    { title: 'Generate Description', component: VisionGeneration},
+    { title: 'Generate Speech track', component: TtsGeneration },
     { title: 'Settings', component: SettingsViewer },
 ];
 

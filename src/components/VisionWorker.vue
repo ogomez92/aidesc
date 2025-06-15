@@ -24,10 +24,10 @@ const dismissToast = () => {
 
 const saveSegmentsToFile = (async () => {
     const path = await import('path');
-    
+
     const fs = await import('fs');
     try {
-        const filePath = await window.ipcRenderer.saveFileDialog(`segments_${path.basename(props.file,path.extname(props.file))}.json`);
+        const filePath = await window.ipcRenderer.saveFileDialog(`segments_${path.basename(props.file, path.extname(props.file))}.json`);
         if (filePath) {
             fs.writeFileSync(filePath, JSON.stringify(segmentsArray.value, null, 2), { encoding: 'utf8' });
 
@@ -44,45 +44,30 @@ const saveSegmentsToFile = (async () => {
 
 const props = defineProps<{
     file: string;
-    segments: string | null;
 }>();
 
 onMounted(async () => {
     const videoProcessor = new VideoProcessor(settingsStore.settings);
-    const fs = await import('fs');
     const duration: number = await VideoService.getDuration(props.file);
     const minutes = Math.floor(duration / 60);
     const seconds = Math.floor(duration % 60);
     fileDuration.value = `${minutes} min ${seconds} sec`;
-    if (props.segments) {
-        try {
-            const segmentsData = JSON.parse(fs.readFileSync(props.segments, 'utf-8'));
-            segmentsArray.value = segmentsData;
-        } catch (error) {
-            console.error('Error reading segments file:', error);
-            toastMessage.value = `Failed to load segments. Error was: ${error}`;
-            toastType.value = "warning";
-            showToast.value = true;
-        }
-    } else {
+
+    try {
         videoProcessor.on(EventType.Progress, (notification: string) => {
             notificationMessage.value = notification;
             showNotification.value = true;
         });
 
-        try {
-            const result: VisionProcessingResult = await videoProcessor.generateVisionSegments(props.file);
-            notificationMessage.value = `Generated ${result.segments.length} vision segments successfully!`;
-            segmentsArray.value = result.segments;
-            showNotification.value = true;
-        } catch (error) {
-            toastMessage.value = `Failed to generate description segments. Error was: ${error}`;
-            toastType.value = "warning";
-            showToast.value = true;
-        }
+        const result: VisionProcessingResult = await videoProcessor.generateVisionSegments(props.file);
+        notificationMessage.value = `Generated ${result.segments.length} vision segments successfully! Please download them to generate a speech track or use the video player.`;
+        segmentsArray.value = result.segments;
+        showNotification.value = true;
+    } catch (error) {
+        toastMessage.value = `Failed to generate description segments. Error was: ${error}`;
+        toastType.value = "warning";
+        showToast.value = true;
     }
-
-    
 })
 </script>
 
@@ -91,8 +76,8 @@ onMounted(async () => {
         <p>Video file: {{ props.file }}</p>
         <p>File duration: {{ fileDuration }}</p>
         <div v-if="segmentsArray.length > 0">
-            <p> Segments loaded (number of segments: {{ segmentsArray.length }})</p>
-            <a href="#" @click.prevent="saveSegmentsToFile">Download for Later</a>
+            <p> Segments loaded (number of segments: {{ segmentsArray.length }}). Please save them and use the other tabs to continue.</p>
+            <a href="#" @click.prevent="saveSegmentsToFile">Download segments.json</a>
         </div>
         <p v-else>Generating segments...</p>
     </div>

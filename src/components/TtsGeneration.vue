@@ -1,18 +1,14 @@
 <template>
   <div class="process-video-container">
-    <h2>Batch Mode</h2>
+    <h2>TTS Generation</h2>
   </div>
   <div v-if="!continueClicked" class="file-controls">
-    <p>Select a video file. Then, you can generate or import audio description segments generated according to your
-      settings. You
-      can then save them, or choose to generate an audio description sound file with a text to speech provider or play
-      the
-      video with the description being sent to your clipboard or screen reader.</p>
+    <p>Select a video file and segments to start generating speech. You will then be able to combine the video or downlload the speech track.</p>
     <button class="btn btn-primary" @click="openFile">
       {{ selectedFile ? 'Change Video File' : 'Select Video File' }}
     </button>
     <button class="btn btn-primary" @click="openSegmentsFile">
-      Import Segments.json file
+      {{ selectedSegmentsFile ? 'Remove imported segments' : 'Import segments.json' }}
     </button>
 
     <div v-if="selectedFile" class="selected-file">
@@ -26,11 +22,11 @@
     </div>
 
     <p class="confirmation">{{ confirmMessage }}</p>
-    <button :disabled="!selectedFile" class="btn btn-secondary" @click="clickContinue">
-      Continue
+    <button :disabled="!selectedFile || !selectedSegmentsFile" class="btn btn-secondary" @click="clickContinue">
+      Generate speech track with {{settings.ttsProvider}}
     </button>
   </div>
-  <BatchWorker v-if="continueClicked" :file="selectedFile || ''" :segments="selectedSegmentsFile" />
+  <TtsWorker v-if="continueClicked" :file="selectedFile || ''" :segments="segmentsData" />
   <ToastMessage v-if="showToast" :message="toastMessage" :type="toastType" :visible="showToast"
     @dismiss="dismissToast" />
 
@@ -38,7 +34,7 @@
 
 <script setup lang="ts">
 import { useSettingsStore } from '@managers/store';
-import BatchWorker from '@components/BatchWorker.vue';
+import TtsWorker from '@components/TtsWorker.vue';
 import { Settings } from '@interfaces/settings';
 import { ref } from 'vue'
 import VisionSegment from '@interfaces/vision_segment';
@@ -51,6 +47,7 @@ const settings: Settings = settingsStore.settings;
 // Reactive state
 const selectedFile = ref<string | null>(null)
 const selectedSegmentsFile = ref<string | null>(null)
+const segmentsData= ref<VisionSegment[]>([]);
 const fileDuration = ref<string | null>(null)
 const toastType = ref<'warning' | 'info'>('info');
 const continueClicked = ref(false);
@@ -111,11 +108,12 @@ const openSegmentsFile = async () => {
       const filePath = await window.ipcRenderer.openFileDialog()
       if (filePath) {
         const data = fs.readFileSync(filePath, 'utf8');
-        const segmentsData: VisionSegment[] = JSON.parse(data);
+        const fileData: VisionSegment[] = JSON.parse(data);
 
-        if (Array.isArray(segmentsData)) {
+        if (Array.isArray(fileData)) {
           selectedSegmentsFile.value = filePath
-          toastMessage.value = `Successfully imported ${segmentsData.length} audio segments from ${filePath}`;
+          segmentsData.value = fileData
+          toastMessage.value = `Successfully imported ${segmentsData.value.length} audio segments from ${filePath}`;
           toastType.value = "info";
           showToast.value = true;
         } else {
