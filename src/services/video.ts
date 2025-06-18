@@ -51,4 +51,13 @@ export class VideoService {
             };
         }
     }
+
+    public static async convertToMp4(inputPath: string, outputPath: string): Promise<void> {
+        const cliHelper = new CliHelper('ffmpeg', ['-i', inputPath, outputPath]);
+        try {
+            cliHelper.executeSync();
+        } catch (error) {
+            throw new Error(`Failed to convert file ${inputPath} to mp4: ${error instanceof Error ? error.message : 'Unknown error'}`);
+        }
+    }
 }

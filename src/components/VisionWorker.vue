@@ -44,25 +44,34 @@ const saveSegmentsToFile = (async () => {
 
 const props = defineProps<{
     file: string;
+    instantMode: boolean;
+    segments: string | null;
 }>();
 
 onMounted(async () => {
-    const videoProcessor = new VideoProcessor(settingsStore.settings);
-    const duration: number = await VideoService.getDuration(props.file);
-    const minutes = Math.floor(duration / 60);
-    const seconds = Math.floor(duration % 60);
-    fileDuration.value = `${minutes} min ${seconds} sec`;
-
     try {
+        const videoProcessor = new VideoProcessor(settingsStore.settings);
+        const duration: number = await VideoService.getDuration(props.file);
+        const minutes = Math.floor(duration / 60);
+        const seconds = Math.floor(duration % 60);
+        fileDuration.value = `${minutes} min ${seconds} sec`;
+
         videoProcessor.on(EventType.Progress, (notification: string) => {
             notificationMessage.value = notification;
             showNotification.value = true;
         });
 
         const result: VisionProcessingResult = await videoProcessor.generateVisionSegments(props.file);
-        notificationMessage.value = `Generated ${result.segments.length} vision segments successfully! Please download them to generate a speech track or use the video player.`;
-        segmentsArray.value = result.segments;
-        showNotification.value = true;
+        if (!props.instantMode) {
+            notificationMessage.value = `Generated ${result.segments.length} vision segments successfully! Please download them to generate a speech track or use the video player.`;
+            showNotification.value = true;
+            segmentsArray.value = result.segments;
+        } else {
+            notificationMessage.value = result.segments.map(segment => segment.description).join('\n');
+            showNotification.value = true;
+            const fs = await import('fs');
+            fs.unlinkSync(props.file);
+        }
     } catch (error) {
         toastMessage.value = `Failed to generate description segments. Error was: ${error}`;
         toastType.value = "warning";
@@ -76,7 +85,8 @@ onMounted(async () => {
         <p>Video file: {{ props.file }}</p>
         <p>File duration: {{ fileDuration }}</p>
         <div v-if="segmentsArray.length > 0">
-            <p> Segments loaded (number of segments: {{ segmentsArray.length }}). Please save them and use the other tabs to continue.</p>
+            <p> Segments loaded (number of segments: {{ segmentsArray.length }}). Please save them and use the other
+                tabs to continue.</p>
             <a href="#" @click.prevent="saveSegmentsToFile">Download segments.json</a>
         </div>
         <p v-else>Generating segments...</p>

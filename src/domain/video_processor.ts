@@ -377,7 +377,7 @@ export class VideoProcessor extends EventEmitter {
             throw new Error(`Audio file does not exist: ${audioFilePath}`);
         }
 
-        const args: string[] = [
+        /* const args: string[] = [
             '-y',
             '-i', videoFilePath,
             '-i', audioFilePath,
@@ -386,6 +386,22 @@ export class VideoProcessor extends EventEmitter {
             '-map', '[aout]', // Map the mixed audio created in the filter complex
             '-c:v', 'copy',
             '-c:a', 'aac',
+            outputPath
+        ];*/
+
+
+        const args: string[] = [
+            '-y',
+            '-i', videoFilePath, // Input 1: video file with audio
+            '-i', audioFilePath, // Input 2: additional audio file
+            '-filter_complex',
+            '[0:a]volume=1[a1];' + // Base volume for main audio
+            '[1:a]volume=1[a2];' + // Base volume for secondary audio
+            '[a1][a2]sidechaincompress=threshold=0.1:ratio=10:attack=5:release=100[aout]', // Apply sidechain compression
+            '-map', '0:v', // Map the video stream from the first input
+            '-map', '[aout]', // Map the sidechain compressed audio
+            '-c:v', 'copy', // Copy the video codec
+            '-c:a', 'aac', // Set audio codec to AAC
             outputPath
         ];
 

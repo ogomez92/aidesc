@@ -1,5 +1,5 @@
 import { ElevenLabsClient } from "@elevenlabs/elevenlabs-js";
-import { inspect } from 'util';
+import { Readable } from 'node:stream';
 import { TTSProvider } from "./tts_provider";
 import { TTSProviderSettings } from "@interfaces/settings";
 import TTSResult from "@interfaces/tts_result";
@@ -22,16 +22,16 @@ export class ElevenLabsTTSProvider extends TTSProvider {
         try {
             const tempOutputPath = outputPath.replace(/\.\w+$/, '_temp$&');
 
-            const audio = await this.eleven.textToSpeech.convert(this.config.voice, {
+            const audio: ReadableStream = await this.eleven.textToSpeech.convert(this.config.voice, {
                 enableLogging: false,
                 outputFormat: 'mp3_44100_128',
                 text,
                 previousText: this.previousText,
                 modelId: this.config.model,
-            });
+            }) as unknown as ReadableStream;
 
             const fileStream = fs.createWriteStream(tempOutputPath);
-            console.log(inspect(audio));
+            // const nodeStream = Readable.fromWeb(audio as any);
             audio.pipe(fileStream); await new Promise<void>((resolve, reject) => {
                 fileStream.on('finish', () => resolve());
                 fileStream.on('error', reject);
@@ -54,6 +54,7 @@ export class ElevenLabsTTSProvider extends TTSProvider {
                 cost: text.length
             };
         } catch (error) {
+            console.error(`Error generating speech with ElevenLabs: ${error}`);
             throw new Error(`Error generating speech with ElevenLabs: ${error}`);
         }
     }

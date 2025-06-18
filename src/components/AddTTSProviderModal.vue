@@ -110,6 +110,11 @@ watch(() => props.isVisible, (visible) => {
         <input id="tts-voice" v-model="newTtsProvider.voice" type="text" class="form-input"
           placeholder="e.g., alloy, nova" />
       </div>
+      <div v-if="newTtsProvider.name === TtsModels.openai" class="form-group">
+        <label for="voice-instructions" class="form-label">Voice Instructions prompt</label>
+        <textarea id="voice-instructions" v-model="newTtsProvider.voice" type="text" class="form-input"
+          placeholder="Voice: Fast speaking, professional speaker for audio descriptions. Accent: American English" />
+      </div>
 
       <div class="modal-actions">
         <button type="submit" class="btn btn-primary">Add Provider</button>

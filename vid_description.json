@@ -1,22 +1,22 @@
 [
   {
     "startTime": 0,
-    "description": "A person plays a racing video game on a monitor, steering through turns and following the race track closely."
+    "description": "Una persona juega a un simulador de carreras en una consola, conduciendo un coche en un circuito mientras toma varias curvas."
   },
   {
     "startTime": 10,
-    "description": "The player accelerates along a straight section of the race track, shifts up through gears, and is approached and overtaken by a red car on the left."
+    "description": "El coche del simulador acelera en una recta, pasa por varias curvas y reduce la velocidad mientras el jugador sigue controlando con el mando."
   },
   {
     "startTime": 20,
-    "description": "The player continues through a right turn, shifting gears and accelerating as buildings and colored curbs pass by on the left."
+    "description": "El coche del simulador toma varias curvas a la derecha y a la izquierda, aumentando la velocidad en las rectas y reduciéndola en las curvas mientras el jugador sigue controlando con precisión el mando."
   },
   {
     "startTime": 30,
-    "description": "The player continues accelerating while taking a long right turn on the virtual race track, shifting gears and moving the car onto a straight section."
+    "description": "El coche del simulador acelera en una recta, aumenta la velocidad y se acerca a otro vehículo que aparece al fondo."
   },
   {
     "startTime": 40,
-    "description": "The car in the game approaches the edge of the track, steering closer to the red-and-green striped curb."
+    "description": "El coche virtual gira a la derecha mientras el jugador mantiene el control con el mando."
   }
 ]

@@ -10,6 +10,7 @@ export interface TTSProviderSettings {
     apiKey?: string | undefined;
     model: string;
     voice: string;
+    voiceInstructionsPrompt?: string;
     speedFactor: number;
 }
 

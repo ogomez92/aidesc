@@ -53,6 +53,7 @@
     "elevenlabs-js": "^1.2.6",
     "openai": "^4.104.0",
     "pinia": "^3.0.3",
+    "readable-web-to-node-stream": "^5.0.0",
     "vuex": "^4.0.2",
     "yargs": "^17.7.2"
   },

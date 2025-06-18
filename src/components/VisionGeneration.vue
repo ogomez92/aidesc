@@ -3,11 +3,12 @@
     <h2>Vision Generation</h2>
   </div>
   <div v-if="!continueClicked" class="file-controls">
-    <p>Load a video file to generate video segments with AI. You will then save these segments and import them in the tts generation tab or the video player tab</p>
+    <p>Load a video file to generate video segments with AI. You will then save these segments and import them in the
+      tts generation tab or the video player tab</p>
     <button class="btn btn-primary" @click="openFile">
       {{ selectedFile ? 'Change Video File' : 'Select Video File' }}
     </button>
-
+    <VideoRecorder @recording_finished="handleCameraVideo" />
     <div v-if="selectedFile" class="selected-file">
       <h3>Selected File:</h3>
       <p class="file-path">{{ selectedFile }}</p>
@@ -19,7 +20,8 @@
       Continue
     </button>
   </div>
-  <VisionWorker v-if="continueClicked" :file="selectedFile || ''" :segments="selectedSegmentsFile" />
+  <VisionWorker v-if="continueClicked" :file="selectedFile || ''" :instantMode="instantMode"
+    :segments="selectedSegmentsFile" />
   <ToastMessage v-if="showToast" :message="toastMessage" :type="toastType" :visible="showToast"
     @dismiss="dismissToast" />
 
@@ -32,6 +34,7 @@ import { Settings } from '@interfaces/settings';
 import { ref } from 'vue'
 import ToastMessage from './ToastMessage.vue'
 import { VideoService } from '@services/video'
+import VideoRecorder from '@components/VideoRecorder.vue';
 
 const settingsStore = useSettingsStore();
 
@@ -40,17 +43,51 @@ const settings: Settings = settingsStore.settings;
 const selectedFile = ref<string | null>(null)
 const selectedSegmentsFile = ref<string | null>(null)
 const fileDuration = ref<string | null>(null)
+const instantMode = ref(false);
 const toastType = ref<'warning' | 'info'>('info');
 const continueClicked = ref(false);
 const toastMessage = ref('');
 const showToast = ref(false);
+const videoFromCamera = ref<string | null>(null);
 const dismissToast = () => {
   showToast.value = false;
 };
 
 const clickContinue = () => {
+  instantMode.value = false;
   continueClicked.value = true;
 }
+
+const handleCameraVideo = async (videoURL: string) => {
+  try {
+    videoFromCamera.value = videoURL;
+    const fs = await import('fs');
+    const path = await import('path');
+
+    const tempDir = await window.ipcRenderer.invoke('get-temp-path', 'aidesc-temp');
+    const videoFilePath = path.join(tempDir, 'camera_video.webm'); // Ensure correct file extension
+
+    // Fetch the blob data using the Object URL
+    const response = await fetch(videoURL);
+    const blob = await response.blob();
+    const arrayBuffer = await blob.arrayBuffer();
+
+    // Convert arrayBuffer to Buffer and write to a file
+    fs.writeFileSync(videoFilePath, await Buffer.from(arrayBuffer));
+
+    // the conversion to mp4 is necessary because otherwise ffprobe can't get the duration
+    await VideoService.convertToMp4(videoFilePath,path.join(tempDir, 'camera_video.mp4'));
+    selectedFile.value = path.join(tempDir, 'camera_video.mp4');
+    instantMode.value = true;
+    continueClicked.value = true;
+  } catch (error) {
+    toastMessage.value = `Failed to save camera video. The error was: ${error}`;
+    toastType.value = "warning";
+    showToast.value = true;
+    instantMode.value = true;
+    selectedFile.value = null;
+  }
+};
 
 const confirmMessage = ref('');
 
@@ -74,20 +111,20 @@ const openFile = async () => {
         if (selectedSegmentsFile.value !== null) {
           confirmMessage.value = `The video has been successfully processed. It will be divided into ${segments} segments for description. Please press continue to start generating vision segments with ${settings.visionProvider} or import a previously generated segments.json file`;
         }
-        } catch (error) {
-          toastMessage.value = `Failed to get video duration. The file type might not be supported by ffmpeg. The error was: ${error}`;
-          toastType.value = "warning";
-          showToast.value = true;
-          selectedFile.value = null;
-        }
+      } catch (error) {
+        toastMessage.value = `Failed to get video duration. The file type might not be supported by ffmpeg. The error was: ${error}`;
+        toastType.value = "warning";
+        showToast.value = true;
+        selectedFile.value = null;
       }
-  } catch (error) {
-      toastMessage.value = `Failed to open file. The error was: ${error}`;
-      toastType.value = "warning";
-      showToast.value = true;
-      selectedFile.value = null;
     }
+  } catch (error) {
+    toastMessage.value = `Failed to open file. The error was: ${error}`;
+    toastType.value = "warning";
+    showToast.value = true;
+    selectedFile.value = null;
   }
+}
 </script>
 
 <style scoped>
