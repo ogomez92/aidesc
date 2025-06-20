@@ -69,43 +69,43 @@ watch(() => props.isVisible, (visible) => {
 
 <template>
   <dialog ref="dialogRef" class="modal-content" @close="closeModal">
-    <h3 id="vision-modal-title" class="modal-title">Add Vision Provider</h3>
+    <h3 id="vision-modal-title" class="modal-title">{{ $t('setting_add_vision_provider') }}</h3>
     <form @submit.prevent="addVisionProvider">
       <div class="form-group">
         <fieldset>
-          <legend class="form-label">Provider Name</legend>
+          <legend class="form-label">{{ $t('modal_tts_provider_name') }}</legend>
           <div class="radio-group">
             <label v-for="(option) in visionModelOptions" :key="option" class="radio-label">
               <input v-model="newVisionProvider.name" :value="option.toLowerCase()" type="radio"
                 name="vision-provider-name" class="form-radio" required />
-              {{ option }}
+              {{ $t('option') }}
             </label>
           </div>
         </fieldset>
       </div>
 
       <div class="form-group">
-        <label for="vision-apikey" class="form-label">API Key</label>
+        <label for="vision-apikey" class="form-label">{{ $t('setting_api_key') }}</label>
         <input aria-required id="vision-apikey" v-model="newVisionProvider.apiKey" type="password" class="form-input"
           placeholder="API key" />
       </div>
 
       <div class="form-group">
-        <label for="vision-model" class="form-label">Model</label>
+        <label for="vision-model" class="form-label">{{ $t('setting_model') }}</label>
         <input id="vision-model" v-model="newVisionProvider.model" type="text" required class="form-input"
           placeholder="e.g., gpt-4o, gemini-2.0-flash" />
       </div>
 
       <div class="form-group">
-        <label for="vision-tokens" class="form-label">Max Tokens</label>
+        <label for="vision-tokens" class="form-label">{{ $t('setting_max_tokens') }}</label>
         <input id="vision-tokens" v-model.number="newVisionProvider.maxTokens" type="number" min="1"
           class="form-input" />
       </div>
 
       <div class="modal-actions">
-        <button type="submit" class="btn btn-primary">Add Provider</button>
+        <button type="submit" class="btn btn-primary">{{$t('button_add')}}</button>
         <button type="button" @click="closeModal" class="btn btn-secondary">
-          Cancel
+          {{ $t('button_cancel') }}
         </button>
       </div>
     </form>

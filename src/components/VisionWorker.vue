@@ -8,6 +8,8 @@ import VisionProcessingResult from '@interfaces/vision_processing_result';
 import ToastMessage from '@components/ToastMessage.vue';
 import EventType from '@enums/event_type';
 import NotificationBar from '@components/NotificationBar.vue';
+import { useI18n } from 'vue-i18n';
+const { t } = useI18n();
 
 const settingsStore = useSettingsStore();
 
@@ -31,12 +33,12 @@ const saveSegmentsToFile = (async () => {
         if (filePath) {
             fs.writeFileSync(filePath, JSON.stringify(segmentsArray.value, null, 2), { encoding: 'utf8' });
 
-            toastMessage.value = `Segments saved to ${filePath}`;
+            toastMessage.value = t('generation_segmentsSaved', {filePath})
             toastType.value = "info";
             showToast.value = true;
         }
     } catch (error) {
-        toastMessage.value = `Failed to save segments. Error was: ${error}`;
+        toastMessage.value = t('generation_segments_fail', {error});
         toastType.value = "warning";
         showToast.value = true;
     }
@@ -63,7 +65,7 @@ onMounted(async () => {
 
         const result: VisionProcessingResult = await videoProcessor.generateVisionSegments(props.file);
         if (!props.instantMode) {
-            notificationMessage.value = `Generated ${result.segments.length} vision segments successfully! Please download them to generate a speech track or use the video player.`;
+            notificationMessage.value = t('generation_segments_generated', {result.segments.length})
             showNotification.value = true;
             segmentsArray.value = result.segments;
         } else {
@@ -73,7 +75,7 @@ onMounted(async () => {
             fs.unlinkSync(props.file);
         }
     } catch (error) {
-        toastMessage.value = `Failed to generate description segments. Error was: ${error}`;
+        toastMessage.value = t('generation_description_fail', {error})
         toastType.value = "warning";
         showToast.value = true;
     }
@@ -82,14 +84,13 @@ onMounted(async () => {
 
 <template>
     <div class="batch-worker">
-        <p>Video file: {{ props.file }}</p>
-        <p>File duration: {{ fileDuration }}</p>
+        <p>{{ $t('generation_selected_file') }} {{ props.file }}</p>
+        <p>{{ $t('generation_duration') }} {{ fileDuration }}</p>
         <div v-if="segmentsArray.length > 0">
-            <p> Segments loaded (number of segments: {{ segmentsArray.length }}). Please save them and use the other
-                tabs to continue.</p>
-            <a href="#" @click.prevent="saveSegmentsToFile">Download segments.json</a>
+            <p> {{ $t('generation_segments_loaded', { segmentsAmount: segmentsArray.length }) }}).</p>
+            <a href="#" @click.prevent="saveSegmentsToFile">{{  $t('generation_segments_download') }}</a>
         </div>
-        <p v-else>Generating segments...</p>
+        <p v-else>{{  $t('generation_generating_segments') }}</p>
     </div>
     <ToastMessage v-if="showToast" :message="toastMessage" :type="toastType" :visible="showToast"
         @dismiss="dismissToast" />

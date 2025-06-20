@@ -72,54 +72,54 @@ watch(() => props.isVisible, (visible) => {
 
 <template>
   <dialog ref="dialogRef" class="modal-content" @close="closeModal">
-    <h3 id="tts-modal-title" class="modal-title">Add TTS Provider</h3>
+    <h3 id="tts-modal-title" class="modal-title">{{ $t('modal_tts_provider_add') }}</h3>
     <form @submit.prevent="addTtsProvider">
       <div class="form-group">
         <fieldset>
-          <legend class="form-label">Provider Name</legend>
+          <legend class="form-label">{{ $t('modal_tts_provider_name') }}</legend>
           <div class="radio-group">
             <label v-for="(option) in ttsModelOptions" :key="option" class="radio-label">
-              <input v-model="newTtsProvider.name" :value="option.toLowerCase()" type="radio" name="tts-provider-name"
+              <input v-model="newTtsProvider.name" :value="option" type="radio" name="tts-provider-name"
                 class="form-radio" required />
-              {{ option }}
+              {{ $t('option') }}
             </label>
           </div>
         </fieldset>
       </div>
 
       <div class="form-group">
-        <label for="tts-speedfactor" class="form-label">Speed Factor</label>
+        <label for="tts-speedfactor" class="form-label">{{ $t('setting_speed_factor') }} </label>
         <input id="tts-speedfactor" v-model.number="newTtsProvider.speedFactor" type="number" step="0.1" min="0.1"
           max="3.0" class="form-input" placeholder="1.0" />
       </div>
 
       <div class="form-group">
-        <label for="tts-apikey" class="form-label">API Key</label>
+        <label for="tts-apikey" class="form-label">{{$t('setting_api_key')}}</label>
         <input aria-required id="tts-apikey" v-model="newTtsProvider.apiKey" type="password" class="form-input"
           placeholder="API key" />
       </div>
 
       <div class="form-group">
-        <label for="tts-model" class="form-label">Model</label>
+        <label for="tts-model" class="form-label">{{ $t('setting_model') }}</label>
         <input id="tts-model" v-model="newTtsProvider.model" type="text" required class="form-input"
-          placeholder="e.g., tts-1-hd, eleven_multilingual_v2" />
+          placeholder="eleven_multilingual_v2"/>
       </div>
 
       <div class="form-group">
-        <label for="tts-voice" class="form-label">Voice</label>
+        <label for="tts-voice" class="form-label">{{ $t('setting_voice') }}</label>
         <input id="tts-voice" v-model="newTtsProvider.voice" type="text" class="form-input"
-          placeholder="e.g., alloy, nova" />
+          placeholder="nova" />
       </div>
       <div v-if="newTtsProvider.name === TtsModels.openai" class="form-group">
-        <label for="voice-instructions" class="form-label">Voice Instructions prompt</label>
+        <label for="voice-instructions" class="form-label">{{$t('setting_voice_instructions')}}</label>
         <textarea id="voice-instructions" v-model="newTtsProvider.voice" type="text" class="form-input"
-          placeholder="Voice: Fast speaking, professional speaker for audio descriptions. Accent: American English" />
+          :placeholder="$t('setting_voice_prompt')"/>
       </div>
 
       <div class="modal-actions">
-        <button type="submit" class="btn btn-primary">Add Provider</button>
+        <button type="submit" class="btn btn-primary">{{$t('button_add') }}</button>
         <button type="button" @click="closeModal" class="btn btn-secondary">
-          Cancel
+          {{  $t('button_cancel') }}
         </button>
       </div>
     </form>

@@ -1,8 +1,8 @@
 <template>
     <div>
         <video ref="video" width="640" height="480"></video>
-        <button @click="toggleRecording">{{ !recording ? 'Record' : 'Stop' }}</button>
-        <button @click="finishRecording" :disabled="!videoUrl">Done Recording</button>
+        <button @click="toggleRecording">{{ !recording ? t('button_record') : t('button_stop') }}</button>
+        <button @click="finishRecording" :disabled="!videoUrl">{{ $t('button_finish') }}</button>
     </div>
     <div role="alert" v-if="videoError">{{ videoError }}</div>
 </template>
@@ -10,6 +10,8 @@
 <script setup lang="ts">
 import EventType from '@enums/event_type';
 import { ref, onMounted, onUnmounted, defineEmits } from 'vue';
+import { useI18n } from 'vue-i18n';
+const { t } = useI18n();
 
 const video = ref<HTMLVideoElement | null>(null);
 const playback = ref<HTMLVideoElement | null>(null);
@@ -34,7 +36,7 @@ const startStream = async () => {
 
         setupRecorder(stream);
     } catch (error) {
-        videoError.value = `Error accessing media devices: ${error}`;
+        videoError.value = t('video_recorder_error', {error})
         console.error(`Error accessing media devices: ${error}`);
     }
 };

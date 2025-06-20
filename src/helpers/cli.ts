@@ -82,4 +82,12 @@ export default class CliHelper extends EventEmitter {
             throw error;
         }
     }
+
+    public static extractVersionNumber(fromText: string): number {
+        const versionMatch = fromText.match(/(\d+\.\d+\.\d+)/);
+        if (versionMatch) {
+            return parseFloat(versionMatch[0]);
+        }
+        throw new Error('No version number found in the provided text');
+    }
 }
