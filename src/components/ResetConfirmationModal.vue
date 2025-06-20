@@ -48,17 +48,17 @@ watch(() => props.isVisible, async (newValue) => {
 
 <template>
   <div v-if="isVisible" class="modal-overlay" @click.self="closeModal">
-    <div class="modal-content" role="dialog" aria-labelledby="reset-modal-title" aria-modal="true" tabindex="-1">
-      <h3 id="reset-modal-title" class="modal-title">Reset Settings</h3>
+    <div class="modal-content" role="dialog" :aria-labelledby="$t('modal_reset_title')" aria-modal="true" tabindex="-1">
+      <h3 id="reset-modal-title" class="modal-title">{{$t('modal_reset_title')}}</h3>
       <p class="modal-text">
-        Are you sure you want to reset all settings to their default values? This action cannot be undone.
+        {{ $t('modal_reset_text') }}
       </p>
       <div class="modal-actions">
         <button type="button" @click="confirmReset" class="btn btn-danger">
-          Yes, Reset
+          {{$t('buton_yes')}}
         </button>
         <button type="button" @click="closeModal" class="btn btn-secondary">
-          Cancel
+          {{$t('button_cancel')}}
         </button>
       </div>
     </div>

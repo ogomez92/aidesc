@@ -7,6 +7,8 @@ import ToastMessage from '@components/ToastMessage.vue';
 import EventType from '@enums/event_type';
 import NotificationBar from '@components/NotificationBar.vue';
 import TTSProcessingResult from '@interfaces/tts_processing_result';
+import { useI18n } from 'vue-i18n';
+const { t } = useI18n();
 
 const settingsStore = useSettingsStore();
 
@@ -30,23 +32,24 @@ const saveAudioTrack = (async () => {
         const filePath = await window.ipcRenderer.saveFileDialog(`description_${path.basename(props.file, path.extname(props.file))}.mp3`);
         if (filePath) {
             await fs.promises.copyFile(audioTrack.value, filePath);
-            toastMessage.value = `Audio track saved!`;
+            toastMessage.value = t('generation_audio_track_saved')
             toastType.value = "info";
             showToast.value = true;
         }
     } catch (error) {
-        toastMessage.value = `Failed to save audio track. Error was: ${error}`;
+        toastMessage.value = t('generation_audio_track_save_fail', { error })
         toastType.value = "warning";
         showToast.value = true;
     }
 })
 
-const saveCombinedAudio= (async () => {
+const saveCombinedAudio = (async () => {
     const path = await import('path');
     const fs = await import('fs');
 
     showToast.value = true;
-    toastMessage.value = 'combining...';
+    toastMessage.value = t('generation_combining')
+
     const videoProcessor = new VideoProcessor(settingsStore.settings);
     const pathToVideo = await videoProcessor.combineAudioWithVideo(props.file, audioTrack.value)
 
@@ -54,12 +57,12 @@ const saveCombinedAudio= (async () => {
         const filePath = await window.ipcRenderer.saveFileDialog(`${path.basename(props.file, path.extname(props.file))}_described_mix.mp4`);
         if (filePath) {
             await fs.promises.copyFile(pathToVideo, filePath);
-            toastMessage.value = `Audio track saved!`;
+            toastMessage.value = t('generation_audio_track_saved')
             toastType.value = "info";
             showToast.value = true;
         }
     } catch (error) {
-        toastMessage.value = `Failed to save audio track. Error was: ${error}`;
+        toastMessage.value = t('generation_audio_track_save_fail', { error })
         toastType.value = "warning";
         showToast.value = true;
     }
@@ -72,10 +75,6 @@ const props = defineProps<{
 
 onMounted(async () => {
     const videoProcessor = new VideoProcessor(settingsStore.settings);
-    // const duration: number = await VideoService.getDuration(props.file);
-    // const minutes = Math.floor(duration / 60);
-    // const seconds = Math.floor(duration % 60);
-    // fileDuration.value = `${minutes} min ${seconds} sec`;
 
     try {
         videoProcessor.on(EventType.Progress, (notification: string) => {
@@ -84,11 +83,11 @@ onMounted(async () => {
         });
 
         const result: TTSProcessingResult = await videoProcessor.generateTtsSegments(props.segments);
-        notificationMessage.value = `Generated audio track successfully!`;
+        notificationMessage.value = t('generation_audio_success');
         showNotification.value = true;
         audioTrack.value = result.audioDescriptionFilePath
     } catch (error) {
-        toastMessage.value = `Failed to generate audio segments. Error was: ${error}`;
+        toastMessage.value = t('generation_tts_segments_fail', error);
         toastType.value = "warning";
         showToast.value = true;
     }
@@ -97,15 +96,15 @@ onMounted(async () => {
 
 <template>
     <div class="batch-worker">
-        <p>Video file: {{ props.file }}</p>
-        <p>File duration: {{ fileDuration }}</p>
+        <p>{{ $t('generation_selected_file') }} {{ props.file }}</p>
+        <p>{{ $t('generation_duration') }} {{ fileDuration }}</p>
         <div v-if="visionSegmentsArray.length > 0">
-            <p> Segments loaded (number of segments: {{ visionSegmentsArray.length }})</p>
+            <p> {{  $t('generation_segments_loaded', {segmentsAmount: visionSegmentsArray.length}) }})</p>
         </div>
         <div v-if="audioTrack">
-            <p role="alert">Audio track generated!</p>
-            <a href="#" @click.prevent="saveAudioTrack">Download description track</a>
-            <a href="#" @click.prevent="saveCombinedAudio">Download Video with description mix</a>
+            <p role="alert">{{ $t('generation_audio_success') }}</p>
+            <a href="#" @click.prevent="saveAudioTrack">{{  $t('generation_download_description') }}</a>
+            <a href="#" @click.prevent="saveCombinedAudio">{{  $t('generation_download_mix') }}</a>
         </div>
     </div>
     <ToastMessage v-if="showToast" :message="toastMessage" :type="toastType" :visible="showToast"

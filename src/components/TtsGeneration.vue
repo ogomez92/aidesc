@@ -1,29 +1,29 @@
 <template>
   <div class="process-video-container">
-    <h2>TTS Generation</h2>
+    <h2>{{ $t('tts_generation_title') }}</h2>
   </div>
   <div v-if="!continueClicked" class="file-controls">
-    <p>Select a video file and segments to start generating speech. You will then be able to combine the video or downlload the speech track.</p>
+    <p>{{ $t('tts_generation_instructions') }}</p>
     <button class="btn btn-primary" @click="openFile">
-      {{ selectedFile ? 'Change Video File' : 'Select Video File' }}
+      {{ selectedFile ? t('tts_generation_change_file') : t('tts_generation_select_file') }}
     </button>
     <button class="btn btn-primary" @click="openSegmentsFile">
-      {{ selectedSegmentsFile ? 'Remove imported segments' : 'Import segments.json' }}
+      {{ selectedSegmentsFile ? t('tts_generation_reupload_segments') : t('tts_generation_upload_segments') }}
     </button>
 
     <div v-if="selectedFile" class="selected-file">
-      <h3>Selected File:</h3>
+      <h3>{{ $t('generation_selected_file') }}</h3>
       <p class="file-path">{{ selectedFile }}</p>
       <p class="file-path">{{ fileDuration }}</p>
     </div>
     <div v-if="selectedSegmentsFile" class="selected-file">
-      <h3>Selected segments:</h3>
+      <h3>{{ $t('generation_selected_segments') }}</h3>
       <p class="file-path">{{ selectedSegmentsFile }}</p>
     </div>
 
     <p class="confirmation">{{ confirmMessage }}</p>
     <button :disabled="!selectedFile || !selectedSegmentsFile" class="btn btn-secondary" @click="clickContinue">
-      Generate speech track with {{settings.ttsProvider}}
+      {{ $t('generation_generate_speech') $t(settings.ttsProvider) }}
     </button>
   </div>
   <TtsWorker v-if="continueClicked" :file="selectedFile || ''" :segments="segmentsData" />
@@ -40,6 +40,8 @@ import { ref } from 'vue'
 import VisionSegment from '@interfaces/vision_segment';
 import ToastMessage from './ToastMessage.vue'
 import { VideoService } from '@services/video'
+import { useI18n } from 'vue-i18n';
+const { t } = useI18n();
 
 const settingsStore = useSettingsStore();
 
@@ -47,7 +49,7 @@ const settings: Settings = settingsStore.settings;
 // Reactive state
 const selectedFile = ref<string | null>(null)
 const selectedSegmentsFile = ref<string | null>(null)
-const segmentsData= ref<VisionSegment[]>([]);
+const segmentsData = ref<VisionSegment[]>([]);
 const fileDuration = ref<string | null>(null)
 const toastType = ref<'warning' | 'info'>('info');
 const continueClicked = ref(false);
@@ -76,7 +78,7 @@ const openFile = async () => {
         fileDuration.value = `Duration: ${minutes} min ${seconds} sec`;
         if (minutes > 20) {
           toastType.value = "warning";
-          toastMessage.value = "Warning: Longer videos are more expensive to describe, especially for voice generation. Consider using a shorter video or using a voice provider that does not require AI."
+          toastMessage.value = t('generation_long_file_warning')
           showToast.value = true;
         }
         const segments = VideoService.calculateNumberOfSegments(duration, settings);
@@ -86,47 +88,47 @@ const openFile = async () => {
         else {
           confirmMessage.value = `The video has been loaded and segments imported. Press continue to generate tts segments with ${settings.ttsProvider}`;
         }
-        } catch (error) {
-          toastMessage.value = `Failed to get video duration. The file type might not be supported by ffmpeg. The error was: ${error}`;
-          toastType.value = "warning";
-          showToast.value = true;
-          selectedFile.value = null;
-        }
+      } catch (error) {
+        toastMessage.value = t('generation_video_duration_check_fail', { error })
+        toastType.value = "warning";
+        showToast.value = true;
+        selectedFile.value = null;
       }
-  } catch (error) {
-      toastMessage.value = `Failed to open file. The error was: ${error}`;
-      toastType.value = "warning";
-      showToast.value = true;
-      selectedFile.value = null;
     }
+  } catch (error) {
+    toastMessage.value = t('generation_fail_open', { error })
+    toastType.value = "warning";
+    showToast.value = true;
+    selectedFile.value = null;
   }
+}
 
 const openSegmentsFile = async () => {
-    const fs = await import('fs');
+  const fs = await import('fs');
 
-    try {
-      const filePath = await window.ipcRenderer.openFileDialog()
-      if (filePath) {
-        const data = fs.readFileSync(filePath, 'utf8');
-        const fileData: VisionSegment[] = JSON.parse(data);
+  try {
+    const filePath = await window.ipcRenderer.openFileDialog()
+    if (filePath) {
+      const data = fs.readFileSync(filePath, 'utf8');
+      const fileData: VisionSegment[] = JSON.parse(data);
 
-        if (Array.isArray(fileData)) {
-          selectedSegmentsFile.value = filePath
-          segmentsData.value = fileData
-          toastMessage.value = `Successfully imported ${segmentsData.value.length} audio segments from ${filePath}`;
-          toastType.value = "info";
-          showToast.value = true;
-        } else {
-          throw new Error('Invalid segments file format. Expected an array of segments.');
-        }
+      if (Array.isArray(fileData)) {
+        selectedSegmentsFile.value = filePath
+        segmentsData.value = fileData
+        toastMessage.value = t('generation_import_segments_success', { segmentsAmount: segmentsData.value.length, filePath })
+        toastType.value = "info";
+        showToast.value = true;
+      } else {
+        throw new Error('Invalid segments file format. Expected an array of segments.');
       }
-    } catch (error) {
-      selectedSegmentsFile.value = null;
-      toastMessage.value = `Failed to import segments file. The error was: ${error}`;
-      toastType.value = "warning";
-      showToast.value = true;
     }
+  } catch (error) {
+    selectedSegmentsFile.value = null;
+    toastMessage.value = t('generation_fail_import_segments', error);
+    toastType.value = "warning";
+    showToast.value = true;
   }
+}
 
 </script>
 
