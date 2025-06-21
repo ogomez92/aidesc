@@ -3,10 +3,10 @@
     <div v-if="isVisible && visible" :class="['toast', `toast--${type}`]">
       <div class="toast__content">
         <div class="toast__icon">
-          <span v-if="type === 'warning'">⚠️</span>
-          <span v-else>ℹ️</span>
+          <span v-if="type === 'warning'">{{ $t('a11y_warning') }}</span>
+          <span v-else>{{ $t('a11y_info') }}</span>
         </div>
-        <div class="toast__message" :role="type === 'warning' ? 'alert' : 'status'" aria-atomic="true">
+        <div class="toast__message" >
           {{ message }}
         </div>
         <button type="button" class="toast__close" @click="dismiss" aria-label="Dismiss notification">

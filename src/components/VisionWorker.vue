@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import VisionSegment from '@interfaces/vision_segment';
 import { VideoService } from '@services/video';
-import { ref, Ref, onMounted, defineProps } from 'vue';
+import { inject, ref, Ref, onMounted, defineProps } from 'vue';
 import { VideoProcessor } from '@domain/video_processor';
 import { useSettingsStore } from '@managers/store';
 import VisionProcessingResult from '@interfaces/vision_processing_result';
@@ -12,6 +12,7 @@ import { useI18n } from 'vue-i18n';
 const { t } = useI18n();
 
 const settingsStore = useSettingsStore();
+const soundManager = inject('soundManager');
 
 const segmentsArray: Ref<VisionSegment[]> = ref([]);
 const fileDuration = ref<string | null>(null)
@@ -68,6 +69,7 @@ onMounted(async () => {
             notificationMessage.value = t('generation_segments_generated', {segmentsAmount: result.segments.length})
             showNotification.value = true;
             segmentsArray.value = result.segments;
+            await soundManager.playSound('done');
         } else {
             notificationMessage.value = result.segments.map(segment => segment.description).join('\n');
             showNotification.value = true;

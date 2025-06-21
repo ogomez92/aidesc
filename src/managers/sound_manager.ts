@@ -9,20 +9,20 @@ export default class SoundManager {
     }
 
     loadSounds() {
-        for (const path in soundPaths) {
-            // Get the URL of each sound
-            this.sounds[path] = soundPaths[path].default;
+        for (const fullPath in soundPaths) {
+            // Extract filename without extension from the full path
+            const fileName = fullPath.split('/').pop().replace('.m4a', '');
+            this.sounds[fileName] = soundPaths[fullPath].default;
         }
     }
 
-    // Play sound asynchronously
-    async playSound(path) {
-        if (!this.sounds[path]) {
-            throw new Error(`Sound at path "${path}" not found.`);
+    async playSound(name) {
+        if (!this.sounds[name]) {
+            throw new Error(`Sound named "${name}" not found.`);
         }
 
         return new Promise((resolve, reject) => {
-            const audio = new Audio(this.sounds[path]);
+            const audio = new Audio(this.sounds[name]);
             audio.play().then(resolve).catch(reject);
         });
     }

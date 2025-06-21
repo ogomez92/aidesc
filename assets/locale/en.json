@@ -90,5 +90,16 @@
   "settings_batch_prompt_desc": "The prompt used for every description. Ensure to include things about each group of images, take the last summary into account, etc.",
   "settings_save": "Save Settings",
   "settings_export": "Export Settings to Clipboard",
-  "settings_reset": "Reset to Defaults"
+  "settings_reset": "Reset to Defaults",
+  "settings_saved": "Settings saved!",
+  "a11y_warning": "Warning!",
+  "a11y_info": "Notification:",
+  "settings_outputs": "Outputs for Video Player and Continuous Mode",
+  "settings_aria_live_region": "Secreen reader (through ARIA live region)",
+  "settings_clipboard": "Clipboard",
+  "settings_text_to_speech": "Text to Speech (SAPI 5 or similar)",
+  "video_player_title": "Video Player",
+  "vp_play": "Play",
+  "vp_pause": "Pause"
+
 }

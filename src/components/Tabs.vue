@@ -68,7 +68,6 @@ onMounted(() => {
   display: flex;
   flex-direction: column;
   width: 100%;
-  max-width: 800px; /* Adjust as needed */
   margin: 2rem auto;
   font-family: sans-serif;
   border: 1px solid #ccc;
