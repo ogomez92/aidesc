@@ -2,8 +2,8 @@
   <div class="process-video-container">
     <h2>{{ $t('video_player_title') }}</h2>
   </div>
+  <p>{{ $t('tts_generation_instructions') }}</p>
   <div v-if="!continueClicked" class="file-controls">
-    <p>{{ $t('tts_generation_instructions') }}</p>
     <button class="btn btn-primary" @click="openFile">
       {{ selectedFile ? t('tts_generation_change_file') : t('tts_generation_select_file') }}
     </button>
@@ -21,11 +21,11 @@
       <p class="file-path">{{ selectedSegmentsFile }}</p>
     </div>
 
-    <p class="confirmation">{{ confirmMessage }}</p>
-    <PlayerControls v-if="selectedFile && segmentsData" :video="selectedFile" :segments="segmentsData" />
-    <ToastMessage v-if="showToast" :message="toastMessage" :type="toastType" :visible="showToast"
-      @dismiss="dismissToast" />
   </div>
+  <p class="confirmation">{{ confirmMessage }}</p>
+  <PlayerControls v-if="selectedFile && segmentsData" :video="selectedFile" :segments="segmentsData" />
+  <ToastMessage v-if="showToast" :message="toastMessage" :type="toastType" :visible="showToast"
+    @dismiss="dismissToast" />
 </template>
 
 <script setup lang="ts">
