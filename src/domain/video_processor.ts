@@ -381,7 +381,7 @@ export class VideoProcessor extends EventEmitter {
             '-y',
             '-i', videoFilePath,
             '-i', audioFilePath,
-            '-filter_complex', '[0:a]volume=[a1];[1:a]volume=0.8[a2];[a1][a2]amix=inputs=2:duration=longest[aout]',
+            '-filter_complex', '[0:a]volume=1.0[a1];[1:a]volume=1.0[a2];[a1][a2]amix=inputs=2:duration=longest[aout]',
             '-map', '0:v',  // Map the video stream from the first input
             '-map', '[aout]', // Map the mixed audio created in the filter complex
             '-c:v', 'copy',

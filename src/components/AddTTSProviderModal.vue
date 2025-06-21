@@ -81,7 +81,7 @@ watch(() => props.isVisible, (visible) => {
             <label v-for="(option) in ttsModelOptions" :key="option" class="radio-label">
               <input v-model="newTtsProvider.name" :value="option" type="radio" name="tts-provider-name"
                 class="form-radio" required />
-              {{ $t('option') }}
+              {{ $t(option) }}
             </label>
           </div>
         </fieldset>

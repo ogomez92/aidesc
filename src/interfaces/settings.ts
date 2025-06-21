@@ -22,4 +22,7 @@ export interface Settings {
     ttsProviders: Array<TTSProviderSettings>;
     batchWindowDuration: number;
     framesInBatch: number;
+    continuousOutputToClipboard: boolean;
+    continuousOutputToAria: boolean;
+    continuousOutputToTts: boolean;
 }

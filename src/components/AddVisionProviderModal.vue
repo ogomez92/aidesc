@@ -78,7 +78,7 @@ watch(() => props.isVisible, (visible) => {
             <label v-for="(option) in visionModelOptions" :key="option" class="radio-label">
               <input v-model="newVisionProvider.name" :value="option.toLowerCase()" type="radio"
                 name="vision-provider-name" class="form-radio" required />
-              {{ $t('option') }}
+              {{ $t(option) }}
             </label>
           </div>
         </fieldset>

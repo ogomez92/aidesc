@@ -45,3 +45,4 @@ get a way to make available models and voices in tts a combo box, possibly also 
 have a helper class with getAvailableModels getAvailableVoices.
 
 continous mode settings: prompt, capture image every, describe every, and method. No tts, just clipboard.
+we really need to add some loading indicators.

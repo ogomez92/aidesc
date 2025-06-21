@@ -1,14 +1,29 @@
+const soundPaths = import.meta.glob('@assets/sounds/*.m4a', { eager: true });
+
 export default class SoundManager {
-    private soundFiles: string[] = [];
+    private sounds;
 
-    async initializeSounds() {
-        this.soundFiles = await Promise.all(
-            Object.entries(import.meta.glob('@assets/sounds/*.mp3')).map(async ([, value]) => {
-                const module = await value() as { default: string };
-                return module.default;
-            })
-        );
+    constructor() {
+        this.sounds = {};
+        this.loadSounds();
+    }
 
-        console.log(this.soundFiles[0]);
+    loadSounds() {
+        for (const path in soundPaths) {
+            // Get the URL of each sound
+            this.sounds[path] = soundPaths[path].default;
+        }
+    }
+
+    // Play sound asynchronously
+    async playSound(path) {
+        if (!this.sounds[path]) {
+            throw new Error(`Sound at path "${path}" not found.`);
+        }
+
+        return new Promise((resolve, reject) => {
+            const audio = new Audio(this.sounds[path]);
+            audio.play().then(resolve).catch(reject);
+        });
     }
 }

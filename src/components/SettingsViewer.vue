@@ -1,4 +1,4 @@
-<script setup lang="ts">
+<<script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue';
 import { useSettingsStore } from '@managers/store';
 
@@ -7,6 +7,8 @@ import ToastMessage from './ToastMessage.vue';
 import AddVisionProviderModal from './AddVisionProviderModal.vue';
 import AddTTSProviderModal from './AddTTSProviderModal.vue';
 import ResetConfirmationModal from './ResetConfirmationModal.vue';
+import { useI18n } from 'vue-i18n';
+const { t } = useI18n();
 
 const settingsStore = useSettingsStore();
 
@@ -19,9 +21,6 @@ const showVisionProviderModal = ref(false);
 const showTtsProviderModal = ref(false);
 const showResetConfirmModal = ref(false);
 
-// Template refs for auto-focus (removed since components handle their own focus)
-
-// Computed arrays for table display
 const visionProvidersArray = computed((): VisionProviderSettings[] => {
     return localSettings.value.visionProviders || [];
 });
@@ -172,50 +171,51 @@ onMounted(() => {
 
 <template>
     <div class="settings-container">
-        <h1 class="settings-title">Application Settings</h1>
+        <h1 class="settings-title">{{ $t('settings_title') }}</h1>
 
         <form @submit.prevent="saveSettings" class="settings-form">
             <!-- General Settings Section -->
             <fieldset>
-                <legend>Time and AI usage</legend>
+                <legend>{{ $t('settings_usage_legend') }}</legend>
                 <section class="settings-section">
-                    <h2 class="section-title">General Settings</h2>
+                    <h2 class="section-title">{{ $t('settings_usage_legend') }}</h2>
 
                     <div class="form-group">
-                        <label for="batchWindowDuration" class="form-label">Batch Window Duration</label>
+                        <label for="batchWindowDuration"
+                            class="form-label">{{ $t('settings_batch_window_duration') }}</label>
                         <input id="batchWindowDuration" v-model.number="localSettings.batchWindowDuration" type="number"
                             min="1" class="form-input" aria-describedby="batchWindowDuration-desc" />
                         <small id="batchWindowDuration-desc" class="form-description">
-                            Duration of each batch window in seconds
+                            {{ $t('settings_batch_window_desc') }}
                         </small>
                     </div>
 
                     <div class="form-group">
-                        <label for="framesInBatch" class="form-label">Frames in Batch</label>
+                        <label for="framesInBatch" class="form-label">{{ $t('settings_frames_in_batch') }}</label>
                         <input id="framesInBatch" v-model.number="localSettings.framesInBatch" type="number" min="1"
                             class="form-input" aria-describedby="framesInBatch-desc" />
                         <small id="framesInBatch-desc" class="form-description">
-                            Number of frames to process in each batch
+                            {{ $t('settings_frames_in_batch_desc') }}
                         </small>
                     </div>
                 </section>
             </fieldset>
             <!-- Vision Provider Settings -->
             <fieldset>
-                <legend>Providers</legend>
+                <legend>{{ $t('settings_ai_providers') }}</legend>
 
                 <section class="settings-section">
-                    <h2 class="section-title">Vision Providers</h2>
+                    <h2 class="section-title">{{ $t('settings_vision_providers') }}</h2>
 
                     <div class="provider-controls">
                         <button type="button" @click="openVisionProviderModal" class="btn btn-primary"
-                            aria-label="Add new vision provider" aria-haspopup="dialog">
-                            Add Vision Provider
+                            aria-haspopup="dialog">
+                            {{$t('settings_add_vision_provider')}}
                         </button>
                     </div>
 
                     <div class="form-group">
-                        <label for="visionProvider" class="form-label">Active Vision Provider</label>
+                        <label for="visionProvider" class="form-label">{{$t('settings_active_vision')}}</label>
                         <select id="visionProvider" v-model="localSettings.visionProvider" class="form-select"
                             aria-describedby="visionProvider-desc">
                             <option v-for="provider in visionProvidersArray" :key="provider.name"
@@ -224,19 +224,19 @@ onMounted(() => {
                             </option>
                         </select>
                         <small id="visionProvider-desc" class="form-description">
-                            Select the vision provider to be used
+                            {{$t('settings_active_vision_desc')}}
                         </small>
                     </div>
 
                     <table class="providers-table" v-if="visionProvidersArray.length > 0">
-                        <caption>Vision Providers</caption>
+                        <caption>{{$t('settings_vision_providers')}}</caption>
                         <thead>
                             <tr>
-                                <th>Provider Name</th>
-                                <th>Model</th>
-                                <th>Max Tokens</th>
-                                <th>API Key</th>
-                                <th>Actions</th>
+                                <th>{{$t('settings_provider_name')}}</th>
+                                <th>{{ $t('settings_provider_model') }}</th>
+                                <th>{{ $t('settings_max_tokens') }}</th>
+                                <th>{{$t('settings_api_key')}}</th>
+                                <th>{{ $t('settings_actions') }}</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -248,8 +248,8 @@ onMounted(() => {
                                 <td>
                                     <button type="button" @click="removeVisionProvider(provider.name)"
                                         class="btn btn-danger btn-sm"
-                                        :aria-label="`Remove ${provider.name} vision provider`">
-                                        Remove
+                                        :aria-label="`${t('settings_remove')} ${provider.name} vision provider`">
+                                        {{$t('settings_remove')}}
                                     </button>
                                 </td>
                             </tr>
@@ -259,17 +259,17 @@ onMounted(() => {
 
                 <!-- TTS Provider Settings -->
                 <section class="settings-section">
-                    <h2 class="section-title">Text-to-Speech Providers</h2>
+                    <h2 class="section-title">{{ $t('settings_tts_providers') }}</h2>
 
                     <div class="provider-controls">
                         <button type="button" @click="openTtsProviderModal" class="btn btn-primary"
-                            aria-label="Add new TTS provider" aria-haspopup="dialog">
-                            Add TTS Provider
+                            aria-haspopup="dialog">
+                            {{$t('settings_add_tts_provider')}}
                         </button>
                     </div>
 
                     <div class="form-group">
-                        <label for="ttsProvider" class="form-label">Active TTS Provider</label>
+                        <label for="ttsProvider" class="form-label">{{$t('settings_active_tts')}}</label>
                         <select id="ttsProvider" v-model="localSettings.ttsProvider" class="form-select"
                             aria-describedby="ttsProvider-desc">
                             <option v-for="provider in ttsProvidersArray" :key="provider.name" :value="provider.name">
@@ -277,7 +277,7 @@ onMounted(() => {
                             </option>
                         </select>
                         <small id="ttsProvider-desc" class="form-description">
-                            Select the TTS provider to be used
+                            {{$t('settings_active_tts_desc')}}
                         </small>
                     </div>
 
@@ -285,12 +285,12 @@ onMounted(() => {
                         <caption>Tts providers</caption>
                         <thead>
                             <tr>
-                                <th>Provider Name</th>
-                                <th>Model</th>
-                                <th>Voice</th>
-                                <th>Speed Factor</th>
-                                <th>API Key</th>
-                                <th>Actions</th>
+                                <th>{{$t('settings_provider_name')}}Name</th>
+                                <th>{{$t('settings_model')}}</th>
+                                <th>{{ $t('settings_voice') }}</th>
+                                <th>{{$t('settings_speed_factor')}}</th>
+                                <th>{{$t('settings_api_key')}}Key</th>
+                                <th>{{$t('settings_actions')}}</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -303,8 +303,8 @@ onMounted(() => {
                                 <td>
                                     <button type="button" @click="removeTtsProvider(provider.name)"
                                         class="btn btn-danger btn-sm"
-                                        :aria-label="`Remove ${provider.name} TTS provider`">
-                                        Remove
+                                        :aria-label="`${t('settings_remove')} ${provider.name} TTS provider`">
+                                        {{$t('settings_remove')}}
                                     </button>
                                 </td>
                             </tr>
@@ -318,11 +318,11 @@ onMounted(() => {
                 <fieldset>
                     <legend>Prompts</legend>
                     <div class="form-group">
-                        <label for="batchPrompt" class="form-label">Batch Prompt</label>
+                        <label for="batchPrompt" class="form-label">{{ $t('settings_batch_prompt') }}</label>
                         <textarea id="batchPrompt" v-model="localSettings.batchPrompt" rows="4" class="form-textarea"
                             aria-describedby="batchPrompt-desc"></textarea>
                         <small id="batchPrompt-desc" class="form-description">
-                            Prompt used for batch processing
+                            {{$t('settings_batch_prompt_desc')}}
                         </small>
                     </div>
                 </fieldset>
@@ -331,13 +331,13 @@ onMounted(() => {
             <!-- Action Buttons -->
             <div class="form-actions">
                 <button type="submit" class="btn btn-success">
-                    Save Settings
+                    {{$t('settings_save')}}
                 </button>
                 <button type="button" @click="exportSettings" class="btn btn-secondary">
-                    Export Settings
+                    {{$t('settings_export')}}
                 </button>
                 <button type="button" @click="showResetConfirmModal = true" class="btn btn-danger">
-                    Reset Settings
+                    {$t('settings_reset')}
                 </button>
             </div>
         </form> <!-- Reset Confirmation Modal -->
