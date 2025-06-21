@@ -37,6 +37,9 @@ async function createWindow() {
     },
   })
 
+  // Remove the default menu
+  win.removeMenu();
+
   if (VITE_DEV_SERVER_URL) { 
     win.loadURL(VITE_DEV_SERVER_URL)
   } else {

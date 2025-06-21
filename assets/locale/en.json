@@ -8,6 +8,7 @@
   "setting_speed_factor": "Speed factor",
   "setting_api_key": "API Key",
   "setting_model": "Model",
+  "settings_title": "Settings",
   "setting_voice": "Voice",
   "setting_voice_instructions": "Voice Instructions Prompt",
   "setting_voice_prompt": "Voice: Fast speaking, professional speaker for audio descriptions. Accent: American English",
