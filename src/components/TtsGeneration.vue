@@ -23,8 +23,7 @@
 
     <p class="confirmation">{{ confirmMessage }}</p>
     <button :disabled="!selectedFile || !selectedSegmentsFile" class="btn btn-secondary" @click="clickContinue">
-      {{ $t('generation_generate_speech') $t(settings.ttsProvider) }}
-    </button>
+      {{ $t('generation_generate_speech') + $t(settings.ttsProvider)}}     </button>
   </div>
   <TtsWorker v-if="continueClicked" :file="selectedFile || ''" :segments="segmentsData" />
   <ToastMessage v-if="showToast" :message="toastMessage" :type="toastType" :visible="showToast"
@@ -124,7 +123,7 @@ const openSegmentsFile = async () => {
     }
   } catch (error) {
     selectedSegmentsFile.value = null;
-    toastMessage.value = t('generation_fail_import_segments', error);
+    toastMessage.value = t('generation_fail_import_segments', {error});
     toastType.value = "warning";
     showToast.value = true;
   }

@@ -87,7 +87,7 @@ onMounted(async () => {
         showNotification.value = true;
         audioTrack.value = result.audioDescriptionFilePath
     } catch (error) {
-        toastMessage.value = t('generation_tts_segments_fail', error);
+        toastMessage.value = t('generation_tts_segments_fail', {error});
         toastType.value = "warning";
         showToast.value = true;
     }

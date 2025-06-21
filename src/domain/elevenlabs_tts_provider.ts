@@ -1,5 +1,5 @@
 import { ElevenLabsClient } from "@elevenlabs/elevenlabs-js";
-import { Readable } from 'node:stream';
+import { PassThrough } from 'stream';
 import { TTSProvider } from "./tts_provider";
 import { TTSProviderSettings } from "@interfaces/settings";
 import TTSResult from "@interfaces/tts_result";
@@ -22,19 +22,40 @@ export class ElevenLabsTTSProvider extends TTSProvider {
         try {
             const tempOutputPath = outputPath.replace(/\.\w+$/, '_temp$&');
 
-            const audio: ReadableStream = await this.eleven.textToSpeech.convert(this.config.voice, {
+            const audio = await this.eleven.textToSpeech.convert(this.config.voice, {
                 enableLogging: false,
                 outputFormat: 'mp3_44100_128',
                 text,
                 previousText: this.previousText,
                 modelId: this.config.model,
-            }) as unknown as ReadableStream;
+            });
 
             const fileStream = fs.createWriteStream(tempOutputPath);
-            // const nodeStream = Readable.fromWeb(audio as any);
-            audio.pipe(fileStream); await new Promise<void>((resolve, reject) => {
+            const nodeStream = new PassThrough();
+            const reader = audio.getReader();
+            const pump = async () => {
+                while (true) {
+                    try {
+                        const { done, value } = await reader.read();
+                        if (done) {
+                            nodeStream.end();
+                            break;
+                        }
+                        nodeStream.push(value);
+                    } catch (error) {
+                        nodeStream.emit('error', error);
+                        break;
+                    }
+                }
+            };
+            await pump();
+
+            nodeStream.pipe(fileStream);
+
+            await new Promise<void>((resolve, reject) => {
                 fileStream.on('finish', () => resolve());
                 fileStream.on('error', reject);
+                nodeStream.on('error', reject); // Propagate errors from the source stream
             });
 
             // Apply speed factor if needed
@@ -48,7 +69,7 @@ export class ElevenLabsTTSProvider extends TTSProvider {
             const audioDuration = await VideoService.getDuration(outputPath);
 
             this.previousText = text;
-            
+
             return {
                 duration: audioDuration,
                 cost: text.length

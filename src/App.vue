@@ -15,9 +15,9 @@ const showOnboarding = computed(() => !settingsStore.isInitialized);
 
 // Tab configuration
 const tabs = [
-    { title: 'Generate Description', component: VisionGeneration},
-    { title: 'Generate Speech track', component: TtsGeneration },
-    { title: 'Settings', component: SettingsViewer },
+    { title: t('vision_generation_title'), component: VisionGeneration},
+    { title: t('tts_generation_title'), component: TtsGeneration },
+    { title: t('settings_title'), component: SettingsViewer },
 ];
 
 onMounted(() => {

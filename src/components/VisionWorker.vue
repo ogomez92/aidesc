@@ -65,7 +65,7 @@ onMounted(async () => {
 
         const result: VisionProcessingResult = await videoProcessor.generateVisionSegments(props.file);
         if (!props.instantMode) {
-            notificationMessage.value = t('generation_segments_generated', {result.segments.length})
+            notificationMessage.value = t('generation_segments_generated', {segmentsAmount: result.segments.length})
             showNotification.value = true;
             segmentsArray.value = result.segments;
         } else {

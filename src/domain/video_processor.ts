@@ -377,7 +377,7 @@ export class VideoProcessor extends EventEmitter {
             throw new Error(`Audio file does not exist: ${audioFilePath}`);
         }
 
-        /* const args: string[] = [
+        const args: string[] = [
             '-y',
             '-i', videoFilePath,
             '-i', audioFilePath,
@@ -387,26 +387,8 @@ export class VideoProcessor extends EventEmitter {
             '-c:v', 'copy',
             '-c:a', 'aac',
             outputPath
-        ];*/
-
-
-        const args: string[] = [
-            '-y',
-            '-i', videoFilePath, // Input 1: video file with audio
-            '-i', audioFilePath, // Input 2: additional audio file
-            '-filter_complex',
-            // Adjust the primary audio volume with sidechain compression and mix with secondary audio
-            '[0:a]volume=1[a0];' + // Normalize the volume of the first audio stream
-            '[1:a]volume=1[a1];' + // Normalize the volume of the second audio stream
-            '[a0][a1]amerge[merged];' + // Merge the two audio streams
-            '[merged]sidechaincompress=threshold=0.1:ratio=10:attack=5:release=100[aout]', // Apply sidechain compression to the merged audio
-            '-map', '0:v', // Map the video stream from the first input
-            '-map', '[aout]', // Map the sidechain compressed audio output
-            '-c:v', 'copy', // Copy the video codec without re-encoding
-            '-c:a', 'aac', // Set audio codec to AAC
-            '-ac', '2', // Ensure the output audio is in stereo
-            outputPath
         ];
+
 
         const cliHelper = new CliHelper('ffmpeg', args);
 

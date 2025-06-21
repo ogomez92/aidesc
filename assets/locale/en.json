@@ -63,5 +63,5 @@
   "generation_segments_generated": "Generated {segmentsAmount} vision segments successfully! Please download them to generate a speech track or use the video player.",
   "generation_description_fail": "Failed to generate description segments. The error was: {error}",
   "generation_segments_download": "Download Description.json file",
-  "generation_generating_segments: "Generating segments...","
+  "generation_generating_segments": "Generating segments..."
 }

@@ -45,12 +45,11 @@
     "vue-tsc": "^2.0.6"
   },
   "dependencies": {
-    "@elevenlabs/elevenlabs-js": "^2.2.0",
+    "@elevenlabs/elevenlabs-js": "^2.3.0",
     "@google/generative-ai": "^0.24.1",
     "@types/fluent-ffmpeg": "^2.1.27",
     "axios": "^1.10.0",
     "dotenv": "^16.3.1",
-    "elevenlabs-js": "^1.2.6",
     "openai": "^4.104.0",
     "pinia": "^3.0.3",
     "readable-web-to-node-stream": "^5.0.0",
