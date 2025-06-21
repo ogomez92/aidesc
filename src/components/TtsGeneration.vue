@@ -2,8 +2,8 @@
   <div class="process-video-container">
     <h2>{{ $t('tts_generation_title') }}</h2>
   </div>
+  <p>{{ $t('tts_generation_instructions') }}</p>
   <div v-if="!continueClicked" class="file-controls">
-    <p>{{ $t('tts_generation_instructions') }}</p>
     <button class="btn btn-primary" @click="openFile">
       {{ selectedFile ? t('tts_generation_change_file') : t('tts_generation_select_file') }}
     </button>
