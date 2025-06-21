@@ -2,23 +2,23 @@
   <div class="process-video-container">
     <h2>{{ $t('vision_generation_title') }}</h2>
   </div>
+  <p>{{ $t('vision_generation_instructions') }}</p>
   <div v-if="!continueClicked" class="file-controls">
-    <p>{{ $t('vision_generation_instructions') }}</p>
     <button class="btn btn-primary" @click="openFile">
       {{ selectedFile ? t('tts_generation_change_file') : t('tts_generation_select_file') }}
     </button>
-    <VideoRecorder @recording_finished="handleCameraVideo" />
     <div v-if="selectedFile" class="selected-file">
       <h3>{{  $t('generation_selected_file') }}</h3>
       <p class="file-path">{{ selectedFile }}</p>
       <p class="file-path">{{ fileDuration }}</p>
     </div>
-
+    
     <p class="confirmation">{{ confirmMessage }}</p>
     <button :disabled="!selectedFile" class="btn btn-secondary" @click="clickContinue">
       {{ $t('button_continue') }}
     </button>
   </div>
+  <VideoRecorder @recording_finished="handleCameraVideo" />
   <VisionWorker v-if="continueClicked" :file="selectedFile || ''" :instantMode="instantMode"
     :segments="selectedSegmentsFile" />
   <ToastMessage v-if="showToast" :message="toastMessage" :type="toastType" :visible="showToast"
@@ -142,6 +142,7 @@ h2 {
 
 .file-controls {
   display: flex;
+  justify-content: center;
   gap: 1rem;
   margin: 2rem 0;
 }
