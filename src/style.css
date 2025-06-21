@@ -67,6 +67,7 @@ code {
 }
 
 #app {
+  width: 90%; /* Els scrolls horitzonals no molen. Això ajuda a evitar-los*/
   max-width: 1280px;
   margin: 0 auto;
   padding: 2rem;
