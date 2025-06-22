@@ -79,7 +79,7 @@
   "settings_provider_model": "Model",
   "settings_max_tokens": "Maximum tokens to use",
   "settings_api_key": "Clave API",
-  "settings_actions": "Acciones",
+  "settings_actions": "Actions",
   "settings_remove": "Remove",
   "settings_tts_providers": "Text to Speech Providers",
   "settings_add_tts_provider": "Add TTS Provider",

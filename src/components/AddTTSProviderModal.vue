@@ -18,6 +18,7 @@ interface Emits {
     model: string;
     speedFactor: number;
     voice: string;
+    voiceInstructionsPrompt?: string;
   }): void;
 }
 
@@ -32,7 +33,8 @@ const newTtsProvider = ref({
   apiKey: '',
   speedFactor: 1.0,
   model: '',
-  voice: ''
+  voice: '',
+  voiceInstructionsPrompt: ''
 });
 
 // Get available model names from enums
@@ -49,6 +51,7 @@ const addTtsProvider = () => {
       apiKey: '',
       speedFactor: 1.0,
       model: '',
+      voiceInstructionsPrompt: '',
       voice: ''
     };
   }
@@ -112,7 +115,7 @@ watch(() => props.isVisible, (visible) => {
       </div>
       <div v-if="newTtsProvider.name === TtsModels.openai" class="form-group">
         <label for="voice-instructions" class="form-label">{{$t('setting_voice_instructions')}}</label>
-        <textarea id="voice-instructions" v-model="newTtsProvider.voice" type="text" class="form-input"
+        <textarea id="voice-instructions" v-model="newTtsProvider.voiceInstructionsPrompt" type="text" class="form-input"
           :placeholder="$t('setting_voice_prompt')"/>
       </div>
 
