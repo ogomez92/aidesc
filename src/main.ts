@@ -4,6 +4,7 @@ import { createPinia } from 'pinia';
 import App from './App.vue';
 const translations = import.meta.glob('@assets/locale/*.json', { eager: true });
 import './style.css';
+
 type Translation = { [key: string]: string };
 
 function loadTranslations() {

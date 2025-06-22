@@ -1,6 +1,6 @@
 <template>
   <div class="process-video-container">
-    <h2>{{ $t('tts_generation_title') }}</h2>
+    <h2>{{ $t('video_player_title') }}</h2>
   </div>
   <p>{{ $t('tts_generation_instructions') }}</p>
   <div v-if="!continueClicked" class="file-controls">
@@ -21,14 +21,11 @@
       <p class="file-path">{{ selectedSegmentsFile }}</p>
     </div>
 
-    <p class="confirmation">{{ confirmMessage }}</p>
-    <button :disabled="!selectedFile || !selectedSegmentsFile" class="btn btn-secondary" @click="clickContinue">
-      {{ $t('generation_generate_speech') + $t(settings.ttsProvider)}}     </button>
   </div>
-  <TtsWorker v-if="continueClicked" :file="selectedFile || ''" :segments="segmentsData" />
+  <p class="confirmation">{{ confirmMessage }}</p>
+  <PlayerControls v-if="selectedFile && segmentsData" :video="selectedFile" :segments="segmentsData" />
   <ToastMessage v-if="showToast" :message="toastMessage" :type="toastType" :visible="showToast"
     @dismiss="dismissToast" />
-
 </template>
 
 <script setup lang="ts">
@@ -38,6 +35,7 @@ import { Settings } from '@interfaces/settings';
 import { ref } from 'vue'
 import VisionSegment from '@interfaces/vision_segment';
 import ToastMessage from './ToastMessage.vue'
+import PlayerControls from '@components/PlayerControls.vue';
 import { VideoService } from '@services/video'
 import { useI18n } from 'vue-i18n';
 const { t } = useI18n();
@@ -123,7 +121,7 @@ const openSegmentsFile = async () => {
     }
   } catch (error) {
     selectedSegmentsFile.value = null;
-    toastMessage.value = t('generation_fail_import_segments', {error});
+    toastMessage.value = t('generation_fail_import_segments', { error });
     toastType.value = "warning";
     showToast.value = true;
   }

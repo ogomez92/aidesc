@@ -2,16 +2,18 @@
   <Transition name="toast">
     <div v-if="isVisible && visible" :class="['toast', `toast--${type}`]">
       <div class="toast__content">
-        <div class="toast__icon">
-          <span v-if="type === 'warning'">⚠️</span>
-          <span v-else>ℹ️</span>
+        <div class="toast__header">
+          <div class="toast__icon">
+            <span v-if="type === 'warning'">{{ $t('a11y_warning') }}</span>
+            <span v-else>{{ $t('a11y_info') }}</span>
+          </div>
+          <button type="button" class="toast__close" @click="dismiss" aria-label="Dismiss notification">
+            ✕
+          </button>
         </div>
-        <div class="toast__message" :role="type === 'warning' ? 'alert' : 'status'" aria-atomic="true">
+        <div class="toast__message" >
           {{ message }}
         </div>
-        <button type="button" class="toast__close" @click="dismiss" aria-label="Dismiss notification">
-          ✕
-        </button>
       </div>
     </div>
   </Transition>
@@ -79,9 +81,13 @@ watch(() => props.visible, (newVisible) => {
 
 .toast__content {
   display: flex;
-  align-items: center;
+  flex-direction: column;
   padding: 1rem;
   gap: 0.75rem;
+}
+.toast__header {
+  display: flex;
+  justify-content: space-between;
 }
 
 .toast__icon {
@@ -93,6 +99,9 @@ watch(() => props.visible, (newVisible) => {
   flex: 1;
   font-weight: 500;
   line-height: 1.4;
+  word-break: break-word; /* Permite el quiebre de palabras largas */
+  white-space: pre-line;  /* Respeta saltos de línea y espacios */
+  overflow-wrap: break-word; /* Soporte adicional para quiebre de palabras */
 }
 
 .toast__close {

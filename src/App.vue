@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted } from 'vue';
+import { computed, onMounted, provide } from 'vue';
 import { useSettingsStore } from './managers/store';
 import OnboardingComponent from '@components/OnboardingComponent.vue';
 import SettingsViewer from '@components/SettingsViewer.vue';
@@ -9,6 +9,9 @@ import TtsGeneration from '@components/TtsGeneration.vue';
 import SystemStatus from '@components/SystemStatus.vue'
 import { useI18n } from 'vue-i18n'
 const { t } = useI18n() 
+import SoundManager from '@managers/sound_manager';
+import VideoPlayer from '@components/VideoPlayer.vue';
+const soundManager = new SoundManager
 
 const settingsStore = useSettingsStore();
 const showOnboarding = computed(() => !settingsStore.isInitialized);
@@ -17,9 +20,11 @@ const showOnboarding = computed(() => !settingsStore.isInitialized);
 const tabs = [
     { title: t('vision_generation_title'), component: VisionGeneration},
     { title: t('tts_generation_title'), component: TtsGeneration },
+    { title: t('video_player_title'), component: VideoPlayer},
     { title: t('settings_title'), component: SettingsViewer },
 ];
 
+provide('soundManager', soundManager);
 onMounted(() => {
     settingsStore.loadSettings();
 });

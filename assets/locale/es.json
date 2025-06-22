@@ -91,5 +91,12 @@
     "settings_batch_prompt_desc": "La instrucción utilizada para cada descripción. Asegúrate de incluir aspectos sobre cada grupo de imágenes, tener en cuenta el último resumen, etc.",
     "settings_save": "Guardar Configuración",
     "settings_export": "Exportar Configuración al Portapapeles",
-    "settings_reset": "Restablecer a los Valores Predeterminados"
+    "settings_reset": "Restablecer a los Valores Predeterminados",
+    "settings_saved": "¡Configuración guardada!",
+    "a11y_warning": "Aviso!",
+    "a11y_info": "Notificación:",
+    "settings_outputs": "Salidas para modo contínuo y reproductor",
+    "settings_aria_live_region": "Lector de pantalla (por ARIA)",
+    "settings_clipboard": "Portapapeles",
+    "settings_text_to_speech": "Texto a voz local (SAPI 5 y derivados)"
 }

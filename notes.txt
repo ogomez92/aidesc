@@ -46,3 +46,4 @@ have a helper class with getAvailableModels getAvailableVoices.
 
 continous mode settings: prompt, capture image every, describe every, and method. No tts, just clipboard.
 we really need to add some loading indicators.
+por cierto, que se me olvidó antes decírtelo. Yo no tengo instalado ni ffmpeg ni ffprobe, y en el comprobador de depencencias me dice que efectivamente no tengo ffmpeg instalado pero para ffprobe se queda pillado el mensaje "checking ffprobe status install..."
