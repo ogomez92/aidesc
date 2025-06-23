@@ -36,6 +36,7 @@ const handleAddTtsProvider = (provider: {
     voice: string
 }) => {
     localSettings.value.ttsProviders.push(provider);
+    localSettings.value.ttsProvider = provider.name
     showTtsProviderModal.value = false;
 };
 
@@ -109,6 +110,7 @@ const handleAddVisionProvider = (provider: {
     name: string; apiKey: string; model: string; maxTokens: number
 }) => {
     localSettings.value.visionProviders.push(provider);
+    localSettings.value.visionProvider = provider.name
     showVisionProviderModal.value = false;
 };
 
