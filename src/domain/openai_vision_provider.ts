@@ -12,7 +12,7 @@ export class OpenAIVisionProvider extends VisionProvider {
         super(config);
         this.openai = new OpenAI({
             dangerouslyAllowBrowser: true,
-            baseURL: config.baseURL || "http://localhost:3000/v1",
+            baseURL: config.baseURL ? config.baseURL : null,
             apiKey: config.apiKey,
         });
     }
