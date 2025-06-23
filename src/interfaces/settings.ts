@@ -2,12 +2,14 @@ export interface VisionProviderSettings {
     name: string;
     apiKey?: string | undefined;
     model: string;
+    baseURL?: string;
     maxTokens: number;
 }
 
 export interface TTSProviderSettings {
     name: string;
     apiKey?: string | undefined;
+    baseURL?: string;
     model: string;
     voice: string;
     voiceInstructionsPrompt?: string;

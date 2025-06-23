@@ -1,6 +1,7 @@
 {
   "modal_tts_provider_add": "Add TTS Provider",
   "modal_tts_provider_name": "Provider Name",
+  "modal_vision_provider_name": "Provider Name",
   "openai": "OpenAI",
   "gemini": "Gemini",
   "elevenlabs": "ElevenLabs",
@@ -101,6 +102,6 @@
   "settings_text_to_speech": "Text to Speech (SAPI 5 or similar)",
   "video_player_title": "Video Player",
   "vp_play": "Play",
+  "openailike": "OPENAI like API with custom URL",
   "vp_pause": "Pause"
-
 }

@@ -8,6 +8,7 @@ import { VideoService } from "@services/video";
 export class ElevenLabsTTSProvider extends TTSProvider {
     private eleven: ElevenLabsClient;
     private previousText = '';
+    public static names = ['elevenlabs']
 
     constructor(config: TTSProviderSettings) {
         super(config);

@@ -4,6 +4,7 @@ import VisionResult from "@interfaces/vision_result";
 
 export default abstract class VisionProvider {
     protected config: VisionProviderSettings;
+    protected static names: string[] = [];
 
     constructor(config: VisionProviderSettings) {
         this.config = config;

@@ -6,16 +6,18 @@ import BatchContext from "@interfaces/batch_context";
 
 export class OpenAIVisionProvider extends VisionProvider {
     private openai: OpenAI;
+    public static names = ['openai', 'openailike'];
 
     constructor(config: VisionProviderSettings) {
         super(config);
         this.openai = new OpenAI({
             dangerouslyAllowBrowser: true,
+            baseURL: config.baseURL || "http://localhost:3000/v1",
             apiKey: config.apiKey,
         });
     }
 
-    async describeImage(imagePath: string, prompt: string): Promise<VisionResult> {
+    public async describeImage(imagePath: string, prompt: string): Promise<VisionResult> {
         const fs = await import('fs');
         try {
             const imageData = fs.readFileSync(imagePath);
@@ -58,7 +60,7 @@ export class OpenAIVisionProvider extends VisionProvider {
         }
     }
 
-    async compareImages(image1Path: string, image2Path: string, prompt: string): Promise<VisionResult> {
+    public async compareImages(image1Path: string, image2Path: string, prompt: string): Promise<VisionResult> {
         const fs = await import('fs');
         try {
             const image1Data = fs.readFileSync(image1Path);
@@ -108,7 +110,7 @@ export class OpenAIVisionProvider extends VisionProvider {
         }
     }
 
-    async describeBatch(imagePaths: string[], lastBatchContext: BatchContext | null, prompt: string): Promise<VisionResult> {
+    public async describeBatch(imagePaths: string[], lastBatchContext: BatchContext | null, prompt: string): Promise<VisionResult> {
         const fs = await import('fs');
 
         try {

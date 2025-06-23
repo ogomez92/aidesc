@@ -6,12 +6,14 @@ import { VideoService } from "@services/video";
 
 export class OpenAITTSProvider extends TTSProvider {
     private openai: OpenAI;
+    public static names = ['openai', 'openailike'];
 
     constructor(config: TTSProviderSettings) {
         super(config);
         this.openai = new OpenAI({
             dangerouslyAllowBrowser: true,
             apiKey: config.apiKey,
+            baseURL: config.baseURL || "http://localhost:3000/v1",
         });
     }
 

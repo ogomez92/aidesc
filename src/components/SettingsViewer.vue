@@ -198,7 +198,7 @@ const addEscapeListener = () => {
 
                                 <div class="form-group">
                                     <label for="framesInBatch" class="form-label">{{ $t('settings_frames_in_batch')
-                                        }}</label>
+                                    }}</label>
                                     <input id="framesInBatch" v-model.number="localSettings.framesInBatch" type="number"
                                         min="1" class="form-input" aria-describedby="framesInBatch-desc" />
                                     <small id="framesInBatch-desc" class="form-description">
@@ -223,7 +223,7 @@ const addEscapeListener = () => {
 
                                 <div class="form-group">
                                     <label for="visionProvider" class="form-label">{{ $t('settings_active_vision')
-                                        }}</label>
+                                    }}</label>
                                     <select id="visionProvider" v-model="localSettings.visionProvider"
                                         class="form-select" aria-describedby="visionProvider-desc">
                                         <option v-for="provider in visionProvidersArray" :key="provider.name"
@@ -249,7 +249,7 @@ const addEscapeListener = () => {
                                     </thead>
                                     <tbody>
                                         <tr v-for="provider in visionProvidersArray" :key="provider.name">
-                                            <td>{{ provider.name }}</td>
+                                            <td>{{ $t(provider.name) }}</td>
                                             <td>{{ provider.model }}</td>
                                             <td>{{ provider.maxTokens }}</td>
                                             <td>{{ provider.apiKey }}</td>
@@ -304,7 +304,7 @@ const addEscapeListener = () => {
                                     </thead>
                                     <tbody>
                                         <tr v-for="provider in ttsProvidersArray" :key="provider.name">
-                                            <td>{{ provider.name }}</td>
+                                            <td>{{ $t(provider.name) }}</td>
                                             <td>{{ provider.model }}</td>
                                             <td>{{ provider.voice }}</td>
                                             <td>{{ provider.speedFactor }}</td>
@@ -328,7 +328,7 @@ const addEscapeListener = () => {
                                 <legend>Prompts</legend>
                                 <div class="form-group">
                                     <label for="batchPrompt" class="form-label">{{ $t('settings_batch_prompt')
-                                        }}</label>
+                                    }}</label>
                                     <textarea id="batchPrompt" v-model="localSettings.batchPrompt" rows="4"
                                         class="form-textarea" aria-describedby="batchPrompt-desc"></textarea>
                                     <small id="batchPrompt-desc" class="form-description">
@@ -339,7 +339,7 @@ const addEscapeListener = () => {
                         </section>
                         <!-- Output Settings -->
                         <section class="settings-section">
-                            <h2 class="section-title">{{$t('settings_outputs')}}</h2>
+                            <h2 class="section-title">{{ $t('settings_outputs') }}</h2>
                             <fieldset>
                                 <legend>{{ $t('settings_outputs') }}</legend>
                                 <div class="form-group">
@@ -354,7 +354,7 @@ const addEscapeListener = () => {
                                             v-model="localSettings.continuousOutputToClipboard"
                                             class="form-check-input">
                                         <label for="clipboard" class="form-check-label">{{ $t('settings_clipboard')
-                                            }}</label>
+                                        }}</label>
                                     </div>
                                     <div class="form-check">
                                         <input type="checkbox" id="textToSpeech"

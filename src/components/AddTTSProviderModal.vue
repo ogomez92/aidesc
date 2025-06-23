@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue';
-import { TtsModels } from '../enums/models';
+import { TTSProviderFactory } from '@domain/tts_provider_factory';
 
 // Props
 interface Props {
@@ -19,6 +19,7 @@ interface Emits {
     speedFactor: number;
     voice: string;
     voiceInstructionsPrompt?: string;
+    baseURL?: string;
   }): void;
 }
 
@@ -34,11 +35,12 @@ const newTtsProvider = ref({
   speedFactor: 1.0,
   model: '',
   voice: '',
+  baseURL: '',
   voiceInstructionsPrompt: ''
 });
 
 // Get available model names from enums
-const ttsModelOptions = Object.values(TtsModels);
+const ttsModelOptions = TTSProviderFactory.getList();
 
 // Methods
 const addTtsProvider = () => {
@@ -51,6 +53,7 @@ const addTtsProvider = () => {
       apiKey: '',
       speedFactor: 1.0,
       model: '',
+      baseURL: '',
       voiceInstructionsPrompt: '',
       voice: ''
     };
@@ -113,10 +116,16 @@ watch(() => props.isVisible, (visible) => {
         <input id="tts-voice" v-model="newTtsProvider.voice" type="text" class="form-input"
           placeholder="nova" />
       </div>
-      <div v-if="newTtsProvider.name === TtsModels.openai" class="form-group">
+      <div v-if="newTtsProvider.name === 'openai'" class="form-group">
         <label for="voice-instructions" class="form-label">{{$t('setting_voice_instructions')}}</label>
         <textarea id="voice-instructions" v-model="newTtsProvider.voiceInstructionsPrompt" type="text" class="form-input"
           :placeholder="$t('setting_voice_prompt')"/>
+      </div>
+
+      <div v-if="newTtsProvider.name === 'openailike'" class="form-group">
+        <label for="base-url" class="form-label">{{$t('setting_baseurl')}}</label>
+        <textarea id="base-url" v-model="newTtsProvider.baseURL" type="text" class="form-input"
+          placeholder="http://localhost:11400"/>
       </div>
 
       <div class="modal-actions">

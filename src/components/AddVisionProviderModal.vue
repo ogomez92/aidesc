@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue';
-import { VisionModels } from '../enums/models';
+import { VisionProviderFactory } from '@domain/vision_provider_factory';
 
 // Props
 interface Props {
@@ -16,6 +16,7 @@ interface Emits {
     name: string;
     apiKey: string;
     model: string;
+    baseURL?: string;
     maxTokens: number;
   }): void;
 }
@@ -28,13 +29,14 @@ const dialogRef = ref<HTMLDialogElement | null>(null);
 // Form data
 const newVisionProvider = ref({
   name: '',
+  baseURL: '',
   apiKey: '',
   model: '',
   maxTokens: 3000
 });
 
 // Get available model names from enums
-const visionModelOptions = Object.values(VisionModels);
+const visionModelOptions = VisionProviderFactory.getList();
 
 // Methods
 const addVisionProvider = () => {
@@ -44,6 +46,7 @@ const addVisionProvider = () => {
     // Reset form
     newVisionProvider.value = {
       name: '',
+      baseURL: '',
       apiKey: '',
       model: '',
       maxTokens: 3000
@@ -73,7 +76,7 @@ watch(() => props.isVisible, (visible) => {
     <form @submit.prevent="addVisionProvider">
       <div class="form-group">
         <fieldset>
-          <legend class="form-label">{{ $t('modal_tts_provider_name') }}</legend>
+          <legend class="form-label">{{ $t('modal_vision_provider_name') }}</legend>
           <div class="radio-group">
             <label v-for="(option) in visionModelOptions" :key="option" class="radio-label">
               <input v-model="newVisionProvider.name" :value="option.toLowerCase()" type="radio"
@@ -101,9 +104,15 @@ watch(() => props.isVisible, (visible) => {
         <input id="vision-tokens" v-model.number="newVisionProvider.maxTokens" type="number" min="1"
           class="form-input" />
       </div>
+      
+      <div v-if="newVisionProvider.name === 'openailike'" class="form-group">
+        <label for="base-url" class="form-label">{{ $t('setting_baseurl') }}</label>
+        <textarea id="base-url" v-model="newVisionProvider.baseURL" type="text" class="form-input"
+          placeholder="http://localhost:11400" />
+      </div>
 
       <div class="modal-actions">
-        <button type="submit" class="btn btn-primary">{{$t('button_add')}}</button>
+        <button type="submit" class="btn btn-primary">{{ $t('button_add') }}</button>
         <button type="button" @click="closeModal" class="btn btn-secondary">
           {{ $t('button_cancel') }}
         </button>

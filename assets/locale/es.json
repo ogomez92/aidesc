@@ -1,6 +1,7 @@
 {
     "modal_tts_provider_add": "Agregar proveedor de TTS",
     "modal_tts_provider_name": "Nombre del proveedor",
+    "modal_vision_provider_name": "Nombre del proveedor",
     "openai": "OpenAI",
     "gemini": "Gemini",
     "elevenlabs": "ElevenLabs",
@@ -97,6 +98,10 @@
     "a11y_info": "Notificación:",
     "settings_outputs": "Salidas para modo contínuo y reproductor",
     "settings_aria_live_region": "Lector de pantalla (por ARIA)",
+    "openailike": "API OpenAI like con URL personalizada",
     "settings_clipboard": "Portapapeles",
-    "settings_text_to_speech": "Texto a voz local (SAPI 5 y derivados)"
+    "settings_text_to_speech": "Texto a voz local (SAPI 5 y derivados)",
+    "video_player_title": "Reproductor de Videos",
+    "vp_play": "Reproducir",
+    "vp_pause": "Pausar"
 }

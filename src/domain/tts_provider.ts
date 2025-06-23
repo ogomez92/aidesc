@@ -4,6 +4,7 @@ import CliHelper from "@helpers/cli";
 
 export abstract class TTSProvider {
     protected config: TTSProviderSettings;
+    protected static names: string[] = [];
 
     constructor(config: TTSProviderSettings) {
         this.config = config;

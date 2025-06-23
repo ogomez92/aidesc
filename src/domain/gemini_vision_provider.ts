@@ -7,6 +7,7 @@ import BatchContext from "@interfaces/batch_context";
 export class GeminiVisionProvider extends VisionProvider {
     private genAI: GoogleGenerativeAI;
     private model: any; // eslint-disable-line @typescript-eslint/no-explicit-any
+    public static names = ['gemini'];
 
     constructor(config: VisionProviderSettings) {
         super(config);
