@@ -1,29 +1,7 @@
-the video loading screen should prompt to open a file and then display the prompt in a multiline so that it can be modified if you want.
-
-After successfully opening a video, or displaying an alert with an error if its not an mp4 file, it should get the duration with ffmpeg stuff and display it, then auto focus the prompt field with the default prompt in it.
-
-I've decided that settings will be in local storage. So we'll use this savedSettings for now, but before we go to prod, this needs to change.
-When the conversion ends, allow for the saving of the mix,  convert the thing with ffmpeg and get the video, and then don't forget to delete the temporary files, or even zip them up maybe and get all the temp files.
-
-I won't, but I'll probably do it a bit differently and render it including web audio. I'll let you move the description track around in 3d. I mix it in 3d because I find it much easier to understand both the video and the descriptions if they're not in the same stereo place.
-I'm adding a whole bunch more to the app. Like video playback and having the description read with your tts or web tts and so on. So you don't have to pay for a tts provider. And change all of the settings in a nice little interface.
-
 Add clipboard tts model
 add ARIA tts model
-generate description srts, to be able to load them and play with vidos. NO ned to cache processed descriptions then, just have user load srt.
 
-So, flow:
-Load videoLoad description or subtitle
-play
-
-refactor video service into AIService
-make calculateSegments function also
 and display how many segments and usage statistics/cost it will need
-When generating segments it will do vision first, then audio, not vision/audio
-we need to ensure that the last batch is also processed even if it is shorter.
-remember options enum? pull vision and tts provider from there using a factory
-the app checks for ffmpeg and ffproe in the path
-not download or include the binaries.
 continuous description mode where it uses tts or clipboard or whatever (not ARIA) to describe camera or shared screen with modifiable prompts.
 
 how about we remove prompts from settings, and add them to the video processing screen and add checkbox to save them for future use. also we need a new prompt for continuous video and since there is no batch, advise users to put a prompt like describe what option is selected, etc.
@@ -47,3 +25,6 @@ have a helper class with getAvailableModels getAvailableVoices.
 continous mode settings: prompt, capture image every, describe every, and method. No tts, just clipboard.
 we really need to add some loading indicators.
 por cierto, que se me olvidó antes decírtelo. Yo no tengo instalado ni ffmpeg ni ffprobe, y en el comprobador de depencencias me dice que efectivamente no tengo ffmpeg instalado pero para ffprobe se queda pillado el mensaje "checking ffprobe status install..."
+global shortcut https://www.electronjs.org/docs/latest/api/global-shortcut
+
+aria (requires window focus)
