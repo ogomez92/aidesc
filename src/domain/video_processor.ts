@@ -240,7 +240,7 @@ export class VideoProcessor extends EventEmitter {
 
             if (batchStart >= videoDuration) break;
 
-            this.emit(EventType.Progress, `Processing batch #${batchIndex + 1} of ${totalBatches}...`);
+            this.emit(EventType.Progress, `batch ${batchIndex + 1}/${totalBatches}...`);
 
             // Capture frames for this batch
             const framePaths: string[] = [];
@@ -261,7 +261,7 @@ export class VideoProcessor extends EventEmitter {
             stats.totalVisionInputCost += visionResult.usage.inputTokens;
             stats.totalVisionOutputCost += visionResult.usage.outputTokens;
             stats.totalCost += visionResult.usage.totalTokens;
-
+            this.emit(EventType.Progress, `${batchIndex + 1}: ${visionResult.description}`);
             visionSegments.push({
                 startTime: batchStart,
                 description: visionResult.description,
