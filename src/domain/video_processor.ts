@@ -227,7 +227,7 @@ export class VideoProcessor extends EventEmitter {
         let currentTimePosition = 0;
         let timelineDrift = 0;
         const maxAllowableDrift = this.settings.batchWindowDuration * 0.5; // Maximum drift of 50% of batch window
-
+        this.emit(EventType.Progress, 'Starting...');
         for (let batchIndex = 0; batchIndex < totalBatches; batchIndex++) {
             const idealBatchStart = batchIndex * this.settings.batchWindowDuration;
             const batchStart = currentTimePosition;
@@ -240,8 +240,6 @@ export class VideoProcessor extends EventEmitter {
 
             if (batchStart >= videoDuration) break;
 
-            this.emit(EventType.Progress, `batch ${batchIndex + 1}/${totalBatches}...`);
-
             // Capture frames for this batch
             const framePaths: string[] = [];
             for (let i = 0; i < framesInBatch; i++) {
@@ -252,6 +250,7 @@ export class VideoProcessor extends EventEmitter {
                     await this.captureFrame(videoFilePath, t, frameFilePath);
                     framePaths.push(frameFilePath);
                 } catch {
+                    this.emit(EventType.Progress, `Error capturing frame in batch ${batchIndex + 1} and frame ${i}`);
                     frameErrorFound = true;
                 }
             }
@@ -261,7 +260,7 @@ export class VideoProcessor extends EventEmitter {
             stats.totalVisionInputCost += visionResult.usage.inputTokens;
             stats.totalVisionOutputCost += visionResult.usage.outputTokens;
             stats.totalCost += visionResult.usage.totalTokens;
-            this.emit(EventType.Progress, `${batchIndex + 1}: ${visionResult.description}`);
+            this.emit(EventType.Progress, `${batchIndex + 1}/${totalBatches}: ${visionResult.description}`);
             visionSegments.push({
                 startTime: batchStart,
                 description: visionResult.description,
