@@ -28,6 +28,7 @@ export default defineConfig(({ command }) => {
           },
           vite: {
             build: {
+              target: 'esnext',
               sourcemap,
               minify: isBuild,
               outDir: 'dist-electron/main',
@@ -43,6 +44,7 @@ export default defineConfig(({ command }) => {
             build: {
               sourcemap: sourcemap ? 'inline' : undefined,
               minify: isBuild,
+              target: 'esnext',
               outDir: 'dist-electron/preload',
               rollupOptions: {
                 external: Object.keys('dependencies' in pkg ? pkg.dependencies : {}),
@@ -58,7 +60,8 @@ export default defineConfig(({ command }) => {
       return {
         host: url.hostname,
         port: +url.port,
-      }    })(),
+      }
+    })(),
     clearScreen: false,
     resolve: {
       alias: {

@@ -187,6 +187,7 @@ export class VideoProcessor extends EventEmitter {
     ): Promise<VisionProcessingResult> {
         const fs = await import('fs');
         const path = await import('path');
+        let frameErrorFound = false;
 
         const tempDir: string = await window.ipcRenderer.invoke('get-temp-path', 'aidesc-temp');
         const outputDir: string = path.join(await window.ipcRenderer.invoke('get-temp-path', 'aidesc-outputs'));
@@ -247,8 +248,12 @@ export class VideoProcessor extends EventEmitter {
                 const t = idealBatchStart + (i * this.settings.batchWindowDuration) / this.settings.framesInBatch;
                 if (t > videoDuration) break; // safety check
                 const frameFilePath = path.join(tempDir, `batch_${batchIndex}_frame_${i}.jpg`);
-                await this.captureFrame(videoFilePath, t, frameFilePath);
-                framePaths.push(frameFilePath);
+                try {
+                    await this.captureFrame(videoFilePath, t, frameFilePath);
+                    framePaths.push(frameFilePath);
+                } catch {
+                    frameErrorFound = true;
+                }
             }
 
             const visionResult: VisionResult = await vision.describeBatch(framePaths, lastBatchContext, this.settings.batchPrompt);
@@ -279,6 +284,7 @@ export class VideoProcessor extends EventEmitter {
 
         const result: VisionProcessingResult = {
             segments: visionSegments,
+            frameErrorFound,
             stats
         }
 

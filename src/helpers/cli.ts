@@ -1,7 +1,8 @@
+import { spawn, spawnSync } from 'child_process';
 import type { ChildProcess } from 'child_process';
 import { EventEmitter } from 'events';
 
-const { spawn, spawnSync } = await import('child_process');
+
 export default class CliHelper extends EventEmitter {
     private command: string;
     private args: string[];
@@ -15,7 +16,7 @@ export default class CliHelper extends EventEmitter {
     }
 
     public execute(): void {
-
+        
         if (this.process) {
             // Optionally emit an error or throw if execute is called multiple times
             // For now, we allow re-execution if the previous one finished.

@@ -28,3 +28,4 @@ por cierto, que se me olvidó antes decírtelo. Yo no tengo instalado ni ffmpeg 
 global shortcut https://www.electronjs.org/docs/latest/api/global-shortcut
 
 aria (requires window focus)
+implement frameErrorFound into stats visualier
