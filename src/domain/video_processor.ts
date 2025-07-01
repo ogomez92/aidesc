@@ -250,7 +250,7 @@ export class VideoProcessor extends EventEmitter {
                     await this.captureFrame(videoFilePath, t, frameFilePath);
                     framePaths.push(frameFilePath);
                 } catch {
-                    this.emit(EventType.Progress, `Warning: can't get frame at batch ${batchIndex + 1} and frame ${i}`, ignored.);
+                    this.emit(EventType.Progress, `Warning: can't get frame at batch ${batchIndex + 1} and frame ${i}, ignored.`);
                     frameErrorFound = true;
                 }
             }
