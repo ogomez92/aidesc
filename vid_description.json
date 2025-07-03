@@ -1,22 +1,26 @@
 [
   {
     "startTime": 0,
-    "description": "Hello."
+    "description": "El coche virtual gira a la derecha y avanza por una curva mientras el jugador mueve el mando y la carretera se va abriendo al fondo."
   },
   {
-    "startTime": 10,
-    "description": "Hello."
+    "startTime": 8,
+    "description": "El coche acelera por la recta, cambiando sucesivamente de marchas hasta la quinta y alcanzando mayor velocidad, mientras la carretera se mantiene en línea recta y los árboles se alejan rápidamente."
   },
   {
-    "startTime": 20,
-    "description": "Hello."
+    "startTime": 16,
+    "description": "El coche toma una curva a la derecha, saliéndose levemente hacia el exterior y luego corrigiendo la trayectoria para mantenerse dentro de la pista."
   },
   {
-    "startTime": 30,
-    "description": "Hello."
+    "startTime": 24,
+    "description": "El coche acelera en la recta, sube marchas y se aproxima a una curva cerrada a la izquierda, donde reduce la velocidad y comienza a girar en dirección al vértice."
+  },
+  {
+    "startTime": 32,
+    "description": "El coche sale de la curva y acelera por la parte exterior del circuito, subiendo marchas y desplazándose hacia la derecha de la pista."
   },
   {
     "startTime": 40,
-    "description": "Hello."
+    "description": "El coche se acerca al borde de la pista, reduciendo la velocidad y desplazándose a la derecha mientras el jugador gira el volante virtual."
   }
 ]

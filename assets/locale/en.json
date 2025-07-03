@@ -103,5 +103,6 @@
   "video_player_title": "Video Player",
   "vp_play": "Play",
   "openailike": "OPENAI like API with custom URL",
+  "video_player_instructions": "Load a video and description, then use the player controls to play the video. Its description will be played according to your settings configured for continuous and video player modes, like clipboard, ARIA, or tts",
   "vp_pause": "Pause"
 }

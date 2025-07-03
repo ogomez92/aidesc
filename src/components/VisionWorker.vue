@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import VisionSegment from '@interfaces/vision_segment';
 import { VideoService } from '@services/video';
-import { inject, ref, Ref, onMounted, defineProps } from 'vue';
+import { inject, ref, Ref, onMounted } from 'vue';
 import { VideoProcessor } from '@domain/video_processor';
 import { useSettingsStore } from '@managers/store';
 import VisionProcessingResult from '@interfaces/vision_processing_result';

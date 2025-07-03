@@ -73,6 +73,7 @@ export default defineConfig(({ command }) => {
         '@managers': path.resolve(__dirname, 'src/managers'),
         '@domain': path.resolve(__dirname, 'src/domain'),
         '@assets': path.resolve(__dirname, 'assets'),
+        '@lib': path.resolve(__dirname, 'src', 'lib'),
         '@': path.resolve(__dirname, 'src')
       },
     },

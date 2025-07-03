@@ -9,7 +9,7 @@
 
 <script setup lang="ts">
 import EventType from '@enums/event_type';
-import { ref, onMounted, onUnmounted, defineEmits } from 'vue';
+import { ref, onMounted, onUnmounted } from 'vue';
 import { useI18n } from 'vue-i18n';
 const { t } = useI18n();
 

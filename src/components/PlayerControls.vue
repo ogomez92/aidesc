@@ -8,10 +8,14 @@
       <span>{{ formatTime(currentTime) }} / {{ formatTime(duration) }}</span>
     </div>
   </div>
+  <NotificationBar :message="notificationMessage" visible="true" />
 </template>
 
 <script setup>
 import { ref, onMounted, onUnmounted, watch } from 'vue';
+import NotificationBar from '@components/NotificationBar.vue';
+import fs from 'fs';
+const notificationMessage = ref('Player Loaded. Description will be displayed here.');
 
 const props = defineProps({
   video: {
@@ -37,7 +41,25 @@ const onLoadedMetadata = () => {
 
 const onTimeUpdate = () => {
   if (videoPlayer.value) {
-    currentTime.value = videoPlayer.value.currentTime;
+    const currentTime = videoPlayer.value.currentTime;
+
+    let currentSegment = null;
+
+    for (let i = 0; i < props.segments.length; i++) {
+      const segment = props.segments[i];
+      const nextSegment = props.segments[i + 1];
+
+      // Check if current time is within the current segment bounds
+      if (currentTime >= segment.startTime && (!nextSegment || currentTime < nextSegment.startTime)) {
+        currentSegment = segment;
+        break;
+      }
+    }
+
+    if (currentSegment) {
+      // use settings to see what we want
+      notificationMessage.value = currentSegment.description;
+    }
   }
 };
 
@@ -113,30 +135,29 @@ const seekToPercentage = (percentage) => {
   }
 };
 
-onMounted(() => {
+onMounted(async () => {
+  const videoData = fs.readFileSync(props.video);
+  const extension = props.video.split('.').pop().toLowerCase();
+  const blob = new Blob([videoData], { type: `video/${extension}` });
+  const videoUrl = URL.createObjectURL(blob);
+
   window.addEventListener('keydown', handleKeydown);
+  console.log('url made');
+
   if (videoPlayer.value) {
+    console.log('loading player')
+
+    videoPlayer.value.src = videoUrl;
+    videoPlayer.value.load();
+
     videoPlayer.value.volume = 1;
   }
+
+  props.segments.sort((a, b) => a.startTime - b.startTime);
 });
 
 onUnmounted(() => {
   window.removeEventListener('keydown', handleKeydown);
-});
-
-watch(()  => props.video, async () => {
-  if (videoPlayer.value) {
-    const fs = await import('fs');
-    const videoData = fs.readFileSync(props.video);
-    const extension = props.video.split('.').pop().toLowerCase();
-    const blob = new Blob([videoData], { type: `video/${extension}` });
-    const videoUrl = URL.createObjectURL(blob);
-    console.log('fuck you')
-    console.log(videoUrl);
-
-    videoPlayer.value.src = videoUrl;
-    videoPlayer.value.load();
-  }
 });
 
 </script>

@@ -39,8 +39,9 @@ async function createWindow() {
 
   // Remove the default menu
   win.removeMenu();
-
-  if (VITE_DEV_SERVER_URL) { 
+  
+  if (VITE_DEV_SERVER_URL) {
+    win.webContents.openDevTools()
     win.loadURL(VITE_DEV_SERVER_URL)
   } else {
     win.loadFile(indexHtml)

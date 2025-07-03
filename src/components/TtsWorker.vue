@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import VisionSegment from '@interfaces/vision_segment';
-import { ref, Ref, onMounted, defineProps } from 'vue';
+import { ref, Ref, onMounted } from 'vue';
 import { VideoProcessor } from '@domain/video_processor';
 import { useSettingsStore } from '@managers/store';
 import ToastMessage from '@components/ToastMessage.vue';
