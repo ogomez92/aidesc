@@ -1,7 +1,8 @@
-import { app, BrowserWindow, shell, ipcMain, dialog } from 'electron'
+import { nativeImage, screen, globalShortcut, clipboard, app, BrowserWindow, shell, ipcMain, dialog } from 'electron'
 import { fileURLToPath } from 'node:url'
 import path from 'node:path'
-
+import fs from 'fs';
+import { desktopCapturer } from 'electron';
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 process.env.APP_ROOT = path.join(__dirname, '../..')
@@ -39,7 +40,7 @@ async function createWindow() {
 
   // Remove the default menu
   win.removeMenu();
-  
+
   if (VITE_DEV_SERVER_URL) {
     win.webContents.openDevTools()
     win.loadURL(VITE_DEV_SERVER_URL)
@@ -48,7 +49,12 @@ async function createWindow() {
   }
 
   win.webContents.on('did-finish-load', () => {
-    win?.webContents.send('main-process-message', new Date().toLocaleString())
+    globalShortcut.register('CommandOrControl+Shift+S', () => {
+      // Send a message to the renderer process
+      if (win) {
+        win.webContents.send('global-shortcut', 'continuousScreenshot');
+      }
+    });
   })
 
   // Make all links open with the browser, not with the application
@@ -99,7 +105,14 @@ ipcMain.handle('open-win', (_, arg) => {
   }
 })
 
-// Handle File Open Dialog
+ipcMain.handle('set-clipboard', (_, text) => {
+  if (typeof text === 'string') {
+    clipboard.writeText(text)
+  } else {
+    throw new Error('Clipboard text must be a string')
+  }
+});
+
 ipcMain.handle('dialog:openFile', async () => {
   const { canceled, filePaths } = await dialog.showOpenDialog({
     properties: ['openFile'],
@@ -113,8 +126,33 @@ ipcMain.handle('dialog:openFile', async () => {
   return null
 })
 
+ipcMain.handle('get-capture-sources', async () => {
+  const sources = await desktopCapturer.getSources({ types: ['screen', 'window'] });
+
+  return sources;
+});
+
 ipcMain.handle('get-temp-path', () => {
   return app.getPath('temp');
+});
+
+ipcMain.handle('capture-screen', async (event, sourceId) => {
+  const primaryDisplay = screen.getPrimaryDisplay()
+  const { width, height } = primaryDisplay.workAreaSize
+
+  const sources = await desktopCapturer.getSources({ types: ['screen', 'window'], thumbnailSize: { width: width, height: height } });
+  const source = sources.find(s => s.id === sourceId);
+
+  if (!source) throw new Error('Source not found');
+
+  const screenshotPath = path.join(app.getPath('temp'), 'screenshot.png');
+  fs.writeFileSync(screenshotPath, source.thumbnail.toPNG());
+
+  // Compress image
+  const image = nativeImage.createFromPath(screenshotPath);
+  const compressedImage = image.resize({ width: width*0.75, height: height*0.75 }).toPNG({ scaleFactor: 0.8 });
+  fs.writeFileSync(screenshotPath, compressedImage);
+  return screenshotPath;
 });
 
 // Handle File Save Dialog
@@ -131,3 +169,8 @@ ipcMain.handle('dialog:saveFile', async (event, defaultPath) => {
   }
   return null
 })
+
+
+app.on('will-quit', () => {
+  globalShortcut.unregisterAll();
+});

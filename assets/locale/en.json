@@ -104,5 +104,14 @@
   "vp_play": "Play",
   "openailike": "OPENAI like API with custom URL",
   "video_player_instructions": "Load a video and description, then use the player controls to play the video. Its description will be played according to your settings configured for continuous and video player modes, like clipboard, ARIA, or tts",
-  "vp_pause": "Pause"
+  "vp_pause": "Pause",
+  "continuous_title": "Continuous Mode",
+  "continuous_source_camera": "Camera",
+  "continuous_source_screen": "Screen (Desktop full screen)",
+  "continuous_time": "Send screenshot every (in seconds)",
+  "settings_continuous_time_desc": "The amount of seconds that will pass before sending the next screenshot. The shorter this time is, the more AI usage you will incur",
+  "error_fetching_sources": "There was an error fetching sources for continuous mode: {error}",
+  "error_screen_capture": "There was an error capturing the screen for continuous mode: {error}",
+  "continuous_mode_not_active": "Warning: Continuous mode not active, please click Start Processing",
+  "continuous_prompt": "Prompt to send with screenshots"
 }

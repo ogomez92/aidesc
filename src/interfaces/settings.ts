@@ -27,4 +27,8 @@ export interface Settings {
     continuousOutputToClipboard: boolean;
     continuousOutputToAria: boolean;
     continuousOutputToTts: boolean;
+    continuousDescribeEvery: number;
+    continuousPrompt: string;
+    continuousSource: string;
+
 }

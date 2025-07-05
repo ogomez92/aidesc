@@ -6,6 +6,7 @@ import SettingsViewer from '@components/SettingsViewer.vue';
 import Tabs from '@components/Tabs.vue'; // Added import
 import VisionGeneration from '@components/VisionGeneration.vue';
 import TtsGeneration from '@components/TtsGeneration.vue';
+import ContinuousMode from '@components/ContinuousMode.vue';
 import SystemStatus from '@components/SystemStatus.vue'
 import { useI18n } from 'vue-i18n'
 const { t } = useI18n() 
@@ -22,6 +23,7 @@ const tabs = [
     { title: t('tts_generation_title'), component: TtsGeneration },
     { title: t('video_player_title'), component: VideoPlayer},
     { title: t('settings_title'), component: SettingsViewer },
+        { title: t('continuous_title'), component: ContinuousMode},
 ];
 
 provide('soundManager', soundManager);

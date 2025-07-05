@@ -20,8 +20,9 @@ window.ipcRenderer = {
   },
   openFileDialog: () => ipcRenderer.invoke('dialog:openFile'),
   saveFileDialog: (filePath: string) => ipcRenderer.invoke('dialog:saveFile', filePath),
-  // You can expose other APIs you need here.
-  // ...
+  getCaptureSources: () => ipcRenderer.invoke('get-capture-sources',),
+  captureScreen: (source) => ipcRenderer.invoke('capture-screen', source),
+  setClipboard: (text) => ipcRenderer.invoke('set-clipboard', text),
 }
 
 // --------- Preload scripts loading ---------

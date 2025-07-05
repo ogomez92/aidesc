@@ -6,7 +6,10 @@
   "visionProviders": [],
   "ttsProvider": "",
   "continuousOutputToClipboard": false,
-"continuousOutputToAria": false,
-"continuousOutputToTts": false,
+  "continuousOutputToAria": true,
+  "continuousOutputToTts": false,
+  "continuousDescribeEvery": 3,
+  "continuousPrompt": "If a focus instruction is not given to you, describe this image with a short and concise sentence. If given a previous image and description, describe only the changes.\n\nIf a focus instruction is given, concentrate on that specific thing. If given a last description and there is no change, you can provide a blank string.\n\nFocus: Read the text of the option I have selected or focused, but only if it has changed.\n\nLanguage: English",
+  "continuousSource": "",
   "ttsProviders": []
 }

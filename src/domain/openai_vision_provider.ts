@@ -17,30 +17,31 @@ export class OpenAIVisionProvider extends VisionProvider {
         });
     }
 
-    public async describeImage(imagePath: string, prompt: string): Promise<VisionResult> {
+    public async describeImage(imagePath: string, prompt: string, lastDescription: string): Promise<VisionResult> {
         const fs = await import('fs');
+
         try {
             const imageData = fs.readFileSync(imagePath);
             const base64Image = imageData.toString('base64');
 
             const response = await this.openai.chat.completions.create({
                 model: this.config.model,
-                temperature: 1,
                 messages: [
                     {
                         role: "user",
                         content: [
                             { type: "text", text: prompt },
+                            { type: "text", text: `last description provided: ${lastDescription} ` },
                             {
                                 type: "image_url",
                                 image_url: {
-                                    url: `data:image/jpeg;base64,${base64Image}`
+                                    url: `data:image/png;base64,${base64Image}`
                                 }
                             }
                         ]
                     }
                 ],
-                max_tokens: this.config.maxTokens || 300
+                max_tokens: this.config.maxTokens || 3000
             });
 
             return {
@@ -54,61 +55,12 @@ export class OpenAIVisionProvider extends VisionProvider {
         } catch (error) {
             console.error("Error describing image:", error);
             return {
-                description: "Unable to describe this image.",
+                description: `Unable to describe this image. ${error}`,
                 usage: { inputTokens: 0, outputTokens: 0, totalTokens: 0 }
             };
         }
     }
 
-    public async compareImages(image1Path: string, image2Path: string, prompt: string): Promise<VisionResult> {
-        const fs = await import('fs');
-        try {
-            const image1Data = fs.readFileSync(image1Path);
-            const image2Data = fs.readFileSync(image2Path);
-            const base64Image1 = image1Data.toString('base64');
-            const base64Image2 = image2Data.toString('base64');
-
-            const response = await this.openai.chat.completions.create({
-                model: this.config.model,
-                messages: [
-                    {
-                        role: "user",
-                        content: [
-                            { type: "text", text: prompt },
-                            {
-                                type: "image_url",
-                                image_url: {
-                                    url: `data:image/jpeg;base64,${base64Image1}`
-                                }
-                            },
-                            {
-                                type: "image_url",
-                                image_url: {
-                                    url: `data:image/jpeg;base64,${base64Image2}`
-                                }
-                            }
-                        ]
-                    }
-                ],
-                max_tokens: this.config.maxTokens || 300
-            });
-
-            return {
-                description: response.choices[0].message.content?.trim() || "Unable to describe the differences.",
-                usage: {
-                    inputTokens: response.usage?.prompt_tokens || 0,
-                    outputTokens: response.usage?.completion_tokens || 0,
-                    totalTokens: response.usage?.total_tokens || 0
-                }
-            };
-        } catch (error) {
-            console.error("Error comparing images:", error);
-            return {
-                description: "Unable to describe the differences between these images.",
-                usage: { inputTokens: 0, outputTokens: 0, totalTokens: 0 }
-            };
-        }
-    }
 
     public async describeBatch(imagePaths: string[], lastBatchContext: BatchContext | null, prompt: string): Promise<VisionResult> {
         const fs = await import('fs');

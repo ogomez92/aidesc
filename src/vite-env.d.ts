@@ -11,5 +11,8 @@ interface Window {
   ipcRenderer: import('electron').IpcRenderer & {
     openFileDialog: () => Promise<string | null>
     saveFileDialog: (defaultPath?: string) => Promise<string | null>
+    getCaptureSources: () => Promise<CaptureSource[]>
+    captureScreen: (source: string) => Promise<string>
+    setClipboard: (text: string) => void
   }
 }
