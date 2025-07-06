@@ -18,17 +18,9 @@ export const useSettingsStore = defineStore('settings', {
 
     getters: {
         isInitialized: (state): boolean => {
-            const visionProviders = state.settings.visionProviders;
-            const ttsProviders = state.settings.ttsProviders;
+            const visionProviderFound = state.settings.visionProviders.length > 0;
 
-            const visionApiKeySet = visionProviders.some(provider =>
-                provider.apiKey && provider.apiKey.trim() !== ''
-            );
-            const ttsApiKeySet = ttsProviders.some(provider =>
-                provider.apiKey && provider.apiKey.trim() !== ''
-            );
-
-            return visionApiKeySet && ttsApiKeySet;
+            return visionProviderFound;
         },
     },
 
