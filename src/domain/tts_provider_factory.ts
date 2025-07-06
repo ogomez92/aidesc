@@ -1,10 +1,12 @@
 import { TTSProviderSettings } from "@interfaces/settings";
 import { ElevenLabsTTSProvider } from "./elevenlabs_tts_provider";
 import { OpenAITTSProvider } from "./openai_tts_provider";
+import { GeminiTTSProvider } from "./gemini_tts_provider";
 import { TTSProvider } from "./tts_provider";
 
 const providers = [
     OpenAITTSProvider,
+    GeminiTTSProvider,
     ElevenLabsTTSProvider
 ];
 

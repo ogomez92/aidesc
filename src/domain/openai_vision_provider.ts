@@ -12,7 +12,7 @@ export class OpenAIVisionProvider extends VisionProvider {
         super(config);
         this.openai = new OpenAI({
             dangerouslyAllowBrowser: true,
-            baseURL: config.baseURL ? config.baseURL : null,
+            baseURL: config.baseURL == '' ? null : config.baseURL,
             apiKey: config.apiKey,
         });
     }
@@ -60,7 +60,6 @@ export class OpenAIVisionProvider extends VisionProvider {
             };
         }
     }
-
 
     public async describeBatch(imagePaths: string[], lastBatchContext: BatchContext | null, prompt: string): Promise<VisionResult> {
         const fs = await import('fs');

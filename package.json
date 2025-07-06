@@ -1,6 +1,6 @@
 {
   "name": "aidesc",
-  "version": "28.1.0",
+  "version": "2.0.0",
   "main": "dist-electron/main/index.js",
   "description": "Really simple Electron + Vue + Vite boilerplate.",
   "author": "草鞋没号 <308487730@qq.com>",
@@ -46,6 +46,7 @@
   },
   "dependencies": {
     "@elevenlabs/elevenlabs-js": "^2.3.0",
+    "@google/genai": "^1.8.0",
     "@google/generative-ai": "^0.24.1",
     "@types/fluent-ffmpeg": "^2.1.27",
     "axios": "^1.10.0",
@@ -54,6 +55,7 @@
     "pinia": "^3.0.3",
     "readable-web-to-node-stream": "^5.0.0",
     "vuex": "^4.0.2",
+    "wav": "^1.0.2",
     "yargs": "^17.7.2"
   },
   "engines": {

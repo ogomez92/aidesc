@@ -146,11 +146,10 @@ ipcMain.handle('capture-screen', async (event, sourceId) => {
   if (!source) throw new Error('Source not found');
 
   const screenshotPath = path.join(app.getPath('temp'), 'screenshot.png');
-  fs.writeFileSync(screenshotPath, source.thumbnail.toPNG());
+  const screenshotBuffer = source.thumbnail.toPNG();
 
-  // Compress image
-  const image = nativeImage.createFromPath(screenshotPath);
-  const compressedImage = image.resize({ width: width*0.75, height: height*0.75 }).toPNG({ scaleFactor: 0.8 });
+  const image = nativeImage.createFromBuffer(screenshotBuffer);
+  const compressedImage = image/*.resize({ width: width * 0.75, height: height * 0.75 })*/.toPNG({ scaleFactor: 0.8 });
   fs.writeFileSync(screenshotPath, compressedImage);
   return screenshotPath;
 });

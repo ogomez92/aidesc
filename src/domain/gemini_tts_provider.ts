@@ -1,20 +1,17 @@
-import OpenAI from "openai";
+import { GoogleGenAI } from '@google/genai';
 import { TTSProvider } from "./tts_provider";
 import { TTSProviderSettings } from "@interfaces/settings";
 import TTSResult from "@interfaces/tts_result";
 import { VideoService } from "@services/video";
 
-export class OpenAITTSProvider extends TTSProvider {
-    private openai: OpenAI;
-    public static names = ['openai', 'openailike'];
+export class GeminiTTSProvider extends TTSProvider {
+    private ai: GoogleGenAI;
+    public static names = ['gemini'];
 
     constructor(config: TTSProviderSettings) {
         super(config);
-
-        this.openai = new OpenAI({
-            dangerouslyAllowBrowser: true,
+        this.ai = new GoogleGenAI({
             apiKey: config.apiKey,
-            baseURL: config.baseURL == '' ? null : config.baseURL,
         });
     }
 
@@ -22,17 +19,23 @@ export class OpenAITTSProvider extends TTSProvider {
         const fs = await import('fs');
         try {
             const tempOutputPath = outputPath.replace(/\.\w+$/, '_temp$&');
-            const mp3 = await this.openai.audio.speech.create({
-                model: this.config.model,
-                input: text,
-                voice: this.config.voice,
-                response_format: 'mp3',
-                instructions: this.config.voiceInstructionsPrompt
+            const response = await this.ai.models.generateContent({
+                model: this.config.model || "gemini-2.5-pro-preview-tts",
+                contents: [{ parts: [{ text: text }] }],
+                config: {
+                    responseModalities: ['AUDIO'],
+                    speechConfig: {
+                        voiceConfig: {
+                            prebuiltVoiceConfig: { voiceName: this.config.voice || 'Kore' },
+                        },
+                    },
+                },
             });
 
-            const buffer = Buffer.from(await mp3.arrayBuffer());
-            fs.writeFileSync(tempOutputPath, buffer);
+            const data = response.candidates?.[0]?.content?.parts?.[0]?.inlineData?.data;
+            const buffer = Buffer.from(data, 'base64');
 
+            fs.writeFileSync(tempOutputPath, buffer);
             // Apply speed factor if needed
             if (this.config.speedFactor !== 1.0) {
                 await this.applySpeedFactor(tempOutputPath, outputPath, this.config.speedFactor);
@@ -48,7 +51,7 @@ export class OpenAITTSProvider extends TTSProvider {
                 cost: Math.ceil(text.length / 1000000) * 12 // 12 dollars per 1m characters.
             };
         } catch (error) {
-            throw new Error(`Error generating speech with OpenAI: ${error}`);
+            throw new Error(`Error generating speech with Gemini: ${error}`);
         }
     }
 }
