@@ -1,0 +1,23 @@
+1
+00:00:00,000 --> 00:00:08,000
+El coche gira bruscamente hacia la derecha y reduce la velocidad mientras el conductor maniobra en una curva cerrada del circuito.
+
+2
+00:00:08,000 --> 00:00:16,000
+El coche acelera rápidamente por la recta, subiendo de marcha mientras sobrepasa los 190 km/h y el jugador mantiene el control del volante virtual.
+
+3
+00:00:16,000 --> 00:00:24,000
+El coche comienza la curva a la derecha, reduciendo velocidad y manteniéndose dentro de los límites de la pista mientras el jugador sigue girando el volante virtual con precisión.
+
+4
+00:00:24,000 --> 00:00:32,000
+El coche sigue girando hacia la derecha, sale de la curva y acelera al entrar en una recta corta, con el paisaje moviéndose rápidamente hacia la izquierda.
+
+5
+00:00:32,000 --> 00:00:40,000
+El coche acelera en la recta, sube rápidamente de velocidad y al final frena bruscamente antes de entrar en otra curva a la derecha.
+
+6
+00:00:40,000 --> 00:00:42,000
+El coche toma la curva a la derecha y el volante gira bruscamente mientras se mantiene cerca del borde de la pista.

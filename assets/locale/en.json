@@ -113,5 +113,6 @@
   "error_fetching_sources": "There was an error fetching sources for continuous mode: {error}",
   "error_screen_capture": "There was an error capturing the screen for continuous mode: {error}",
   "continuous_mode_not_active": "Warning: Continuous mode not active, please click Start Processing",
+  "generation_subtitles_download": "Download srt (subtitles) file",
   "continuous_prompt": "Prompt to send with screenshots"
 }

@@ -9,6 +9,7 @@ import ToastMessage from '@components/ToastMessage.vue';
 import EventType from '@enums/event_type';
 import NotificationBar from '@components/NotificationBar.vue';
 import { useI18n } from 'vue-i18n';
+import SubtitleHelper from '@helpers/SubtitleHelper';
 const { t } = useI18n();
 
 const settingsStore = useSettingsStore();
@@ -33,6 +34,26 @@ const saveSegmentsToFile = (async () => {
         const filePath = await window.ipcRenderer.saveFileDialog(`${path.basename(props.file, path.extname(props.file))}_description.json`);
         if (filePath) {
             fs.writeFileSync(filePath, JSON.stringify(segmentsArray.value, null, 2), { encoding: 'utf8' });
+
+            toastMessage.value = t('generation_segmentsSaved', {filePath})
+            toastType.value = "info";
+            showToast.value = true;
+        }
+    } catch (error) {
+        toastMessage.value = t('generation_segments_fail', {error});
+        toastType.value = "warning";
+        showToast.value = true;
+    }
+})
+
+const saveSubtitlesToFile = (async () => {
+    const path = await import('path');
+
+    const fs = await import('fs');
+    try {
+        const filePath = await window.ipcRenderer.saveFileDialog(`${path.basename(props.file, path.extname(props.file))}_subs.srt`);
+        if (filePath) {
+            fs.writeFileSync(filePath, SubtitleHelper.createSubtitlesFromDescription(segmentsArray.value), { encoding: 'utf8' });
 
             toastMessage.value = t('generation_segmentsSaved', {filePath})
             toastType.value = "info";
@@ -91,6 +112,7 @@ onMounted(async () => {
         <div v-if="segmentsArray.length > 0">
             <p> {{ $t('generation_segments_loaded', { segmentsAmount: segmentsArray.length }) }}).</p>
             <a href="#" @click.prevent="saveSegmentsToFile">{{  $t('generation_segments_download') }}</a>
+            <a href="#" @click.prevent="saveSubtitlesToFile">{{  $t('generation_subtitles_download') }}</a>
         </div>
         <p v-else>{{  $t('generation_generating_segments') }}</p>
     </div>

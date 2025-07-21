@@ -103,6 +103,15 @@
     "settings_text_to_speech": "Texto a voz local (SAPI 5 y derivados)",
     "video_player_title": "Reproductor de Videos",
     "vp_play": "Reproducir",
-    "vp_pause": "Pausar"
-
+    "vp_pause": "Pausar",
+  "continuous_title": "Modo Continuo",
+  "continuous_source_camera": "Cámara",
+  "continuous_source_screen": "Pantalla (Pantalla completa del escritorio)",
+  "continuous_time": "Enviar captura de pantalla cada (en segundos)",
+  "settings_continuous_time_desc": "La cantidad de segundos que pasarán antes de enviar la siguiente captura de pantalla. Cuanto más corto sea este tiempo, mayor será el uso de IA",
+  "error_fetching_sources": "Hubo un error al obtener las fuentes para el modo continuo: {error}",
+  "error_screen_capture": "Hubo un error al capturar la pantalla para el modo continuo: {error}",
+  "continuous_mode_not_active": "Advertencia: Modo continuo no activo, por favor haga clic en Iniciar Procesamiento",
+  "generation_subtitles_download": "Descargar archivo srt (subtítulos)",
+  "continuous_prompt": "Prompt para enviar con capturas de pantalla"
 }

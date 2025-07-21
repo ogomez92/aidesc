@@ -1,41 +1,33 @@
 {
-  "$schema": "https://raw.githubusercontent.com/electron-userland/electron-builder/master/packages/app-builder-lib/scheme.json",
-  "appId": "com.oriolgomez.aidesc",
-  "asar": true,
-  "productName": "Aidesc",
-  "directories": {
-    "output": "release/${version}"
+  $schema: "https://raw.githubusercontent.com/electron-userland/electron-builder/master/packages/app-builder-lib/scheme.json",
+  appId: "com.oriolgomez.aidesc",
+  asar: true,
+  productName: "Aidesc",
+  directories: {
+    output: "release/${version}",
   },
-  "files": [
-    "dist",
-    "dist-electron"
-  ],
-  "mac": {
-    "target": [
+  files: ["dist", "dist-electron"],
+  mac: {
+    hardenedRuntime: true,
+    target: [
       {
-        "target": "dmg",
-        "arch": [
-          "arm64"
-        ]
-      }
+        target: "zip",
+        arch: ["arm64"],
+      },
     ],
-    "artifactName": "${productName}-Mac-${version}-Installer.${ext}"
+    artifactName: "${productName}-Mac-${version}-Installer.${ext}",
   },
-  "win": {
-    "target": [
+  win: {
+    target: [
       {
-        "target": "zip",
-        "arch": [
-          "x64"
-        ]
-      }
+        target: "zip",
+        arch: ["x64"],
+      },
     ],
-    "artifactName": "${productName}-Windows-${version}.${ext}"
+    artifactName: "${productName}-Windows-${version}.${ext}",
   },
-  "linux": {
-    "target": [
-      "AppImage"
-    ],
-    "artifactName": "${productName}-Linux-${version}.${ext}"
-  }
+  linux: {
+    target: ["AppImage"],
+    artifactName: "${productName}-Linux-${version}.${ext}",
+  },
 }
