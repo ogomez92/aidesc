@@ -62,16 +62,19 @@ export class VideoProcessor extends EventEmitter {
             fs.mkdirSync(outputDir, { recursive: true });
         }
 
-        const videoDuration = segments.reduce((max, segment) => Math.max(max, segment.startTime + (segment.duration || 0)), 0);
+        // Calculate the total duration based on segment end times
+        const totalDuration = segments.reduce((max, segment) => Math.max(max, segment.startTime + (segment.duration || 0)), 0);
+
         const silentBasePath = path.join(tempDir, 'silent_base.wav');
         this.emit(EventType.Progress, `Combining audio segments into ${outputPath}...`);
-        // Create silent base track
+
+        // Create silent base track with total duration
         await new Promise<void>((resolve, reject) => {
             const args = [
                 '-y',
                 '-f', 'lavfi',
                 '-i', `anullsrc=r=44100:cl=stereo`,
-                '-t', videoDuration.toString(),
+                '-t', totalDuration.toString(),
                 '-c:a', 'pcm_s16le',
                 silentBasePath
             ];
@@ -89,6 +92,7 @@ export class VideoProcessor extends EventEmitter {
         const sortedSegments = [...segments].sort((a, b) => a.startTime - b.startTime);
 
         let currentAudioPath = silentBasePath;
+        let lastSegmentEnd = 0;
 
         // Process segments one by one
         for (let i = 0; i < sortedSegments.length; i++) {
@@ -118,7 +122,7 @@ export class VideoProcessor extends EventEmitter {
 
             // Mix with current audio
             await new Promise<void>((resolve, reject) => {
-                const delayMs = Math.round(segment.startTime * 1000);
+                const delayMs = Math.ceil(segment.startTime * 1000);
                 const filterComplex = `[1:a]adelay=${delayMs}|${delayMs}[delayed];[0:a][delayed]amix=inputs=2:duration=first:dropout_transition=0:normalize=0[out]`;
                 const args = [
                     '-y',
@@ -139,6 +143,8 @@ export class VideoProcessor extends EventEmitter {
                 }
             });
 
+            lastSegmentEnd += segment.duration;
+
             // Clean up
             if (currentAudioPath !== silentBasePath) {
                 fs.unlinkSync(currentAudioPath);
@@ -155,7 +161,7 @@ export class VideoProcessor extends EventEmitter {
                     '-y',
                     '-i', currentAudioPath,
                     '-c:a', 'libmp3lame',
-                    '-q:a', '2', // Corresponds to -audioQuality(2) for libmp3lame
+                    '-q:a', '2',
                     outputPath
                 ];
                 try {
@@ -345,7 +351,7 @@ export class VideoProcessor extends EventEmitter {
                 duration: ttsResult.duration,
                 description: visionSegment.description
             });
-            lastSegmentEndTime = ttsResult.duration;
+            lastSegmentEndTime += ttsResult.duration;
         }
 
         const outputAudioPath = path.join(outputDir, 'combined_audio_segments.mp3');

@@ -8,6 +8,7 @@ export default class CliHelper extends EventEmitter {
     private args: string[];
     private process: ChildProcess | null = null;
     private erroredViaProcessErrorEvent: boolean = false;
+    private debug = false;
 
     constructor(command: string, args: string[]) {
         super();
@@ -15,7 +16,8 @@ export default class CliHelper extends EventEmitter {
         this.args = args;
     }
 
-    public execute(): void {
+    public execute(debug = false): void {
+        this.debug = debug;
         
         if (this.process) {
             // Optionally emit an error or throw if execute is called multiple times
@@ -31,7 +33,10 @@ export default class CliHelper extends EventEmitter {
 
         this.process.on('error', (err: Error) => {
             this.erroredViaProcessErrorEvent = true;
-            console.error('error', new Error(`Failed to execute ${this.command}: ${err.message}`));
+            if (this.debug) {
+                console.error('error', new Error(`Failed to execute ${this.command}: ${err.message}`));
+            }
+
             this.emit('error', new Error(`Failed to execute ${this.command}: ${err.message}`));
         });
 
@@ -56,7 +61,8 @@ export default class CliHelper extends EventEmitter {
     }
 
     // executeBlocking method which just errors out if there is ever an error and returns stderr, or if no error, return stdin.
-    public executeSync(): string {
+    public executeSync(debug = false): string {
+        this.debug = debug;
         if (this.process) {
             throw new Error('Process is already running. Cannot execute blocking command.');
         }
@@ -72,7 +78,7 @@ export default class CliHelper extends EventEmitter {
                 throw new Error(`${this.command} exited with code ${result.status}: ${result.stderr}`);
             }
 
-            if (result.status === 0 && result.stderr) {
+            if (result.status === 0 && result.stderr && this.debug) {
                 console.error(`${this.command} exited with code 0 but there were some errors: ${result.stderr}`);
                 // throw new Error(`${this.command} exited with code 0 but there were some errors: ${result.stderr}`);
             }

@@ -1,26 +1,38 @@
 [
   {
     "startTime": 0,
-    "description": "El coche virtual gira a la derecha y avanza por una curva mientras el jugador mueve el mando y la carretera se va abriendo al fondo."
+    "description": "El coche virtual avanza por la curva hacia la derecha mientras el jugador gira el volante, cambia de segunda a tercera marcha y la velocidad aumenta gradualmente."
   },
   {
-    "startTime": 8,
-    "description": "El coche acelera por la recta, cambiando sucesivamente de marchas hasta la quinta y alcanzando mayor velocidad, mientras la carretera se mantiene en línea recta y los árboles se alejan rápidamente."
+    "startTime": 5,
+    "description": "El coche virtual acelera mientras toma una curva hacia la derecha y el jugador cambia a segunda y luego a tercera marcha."
   },
   {
-    "startTime": 16,
-    "description": "El coche toma una curva a la derecha, saliéndose levemente hacia el exterior y luego corrigiendo la trayectoria para mantenerse dentro de la pista."
+    "startTime": 10,
+    "description": "El coche virtual aumenta de velocidad, subiendo rápidamente de tercera a quinta marcha en la recta, y el entorno exterior pasa cada vez más rápido."
   },
   {
-    "startTime": 24,
-    "description": "El coche acelera en la recta, sube marchas y se aproxima a una curva cerrada a la izquierda, donde reduce la velocidad y comienza a girar en dirección al vértice."
+    "startTime": 15,
+    "description": "Un coche rival aparece por la izquierda y es adelantado, mientras el coche virtual toma una curva a la derecha, disminuyendo la velocidad y bajando de marcha."
   },
   {
-    "startTime": 32,
-    "description": "El coche sale de la curva y acelera por la parte exterior del circuito, subiendo marchas y desplazándose hacia la derecha de la pista."
+    "startTime": 20,
+    "description": "El coche virtual acelera saliendo de la curva y continúa recto, subiendo de marcha y alcanzando más velocidad en la recta."
+  },
+  {
+    "startTime": 25,
+    "description": "El coche virtual reduce la velocidad mientras gira hacia la derecha, acercándose al borde verde de la pista."
+  },
+  {
+    "startTime": 30,
+    "description": "El coche sale del giro a la derecha, vuelve al trazado asfaltado y acelera, alejándose del borde verde de la pista."
+  },
+  {
+    "startTime": 35,
+    "description": "El coche sigue acelerando por la recta, acercándose progresivamente al borde azul de la pista, y después reduce la velocidad mientras gira a la derecha."
   },
   {
     "startTime": 40,
-    "description": "El coche se acerca al borde de la pista, reduciendo la velocidad y desplazándose a la derecha mientras el jugador gira el volante virtual."
+    "description": "El coche reduce la velocidad aún más y continúa girando hacia la derecha, acercándose al borde de la pista con las ruedas alineadas casi paralelas al bordillo rojo y verde."
   }
 ]
