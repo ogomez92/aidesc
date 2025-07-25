@@ -351,7 +351,7 @@ export class VideoProcessor extends EventEmitter {
                 duration: ttsResult.duration,
                 description: visionSegment.description
             });
-            lastSegmentEndTime += ttsResult.duration;
+            lastSegmentEndTime += ttsResult.duration + 0.5;
         }
 
         const outputAudioPath = path.join(outputDir, 'combined_audio_segments.mp3');
