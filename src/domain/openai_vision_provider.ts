@@ -41,7 +41,6 @@ export class OpenAIVisionProvider extends VisionProvider {
                         ]
                     }
                 ],
-                max_tokens: this.config.maxTokens || 3000
             });
 
             return {
@@ -108,7 +107,6 @@ export class OpenAIVisionProvider extends VisionProvider {
             const response = await this.openai.chat.completions.create({
                 model: this.config.model,
                 messages: messages as any, // eslint-disable-line @typescript-eslint/no-explicit-any
-                max_tokens: this.config.maxTokens || 300
             });
 
             return {

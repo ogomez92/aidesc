@@ -3,7 +3,6 @@ export interface VisionProviderSettings {
     apiKey?: string | undefined;
     model: string;
     baseURL?: string;
-    maxTokens: number;
 }
 
 export interface TTSProviderSettings {

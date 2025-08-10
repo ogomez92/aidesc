@@ -107,7 +107,7 @@ const openVisionProviderModal = () => {
 };
 
 const handleAddVisionProvider = (provider: {
-    name: string; apiKey: string; model: string; maxTokens: number
+    name: string; apiKey: string; model: string; 
 }) => {
     localSettings.value.visionProviders.push(provider);
     localSettings.value.visionProvider = provider.name
@@ -253,7 +253,6 @@ const addEscapeListener = () => {
                                         <tr v-for="provider in visionProvidersArray" :key="provider.name">
                                             <td>{{ $t(provider.name) }}</td>
                                             <td>{{ provider.model }}</td>
-                                            <td>{{ provider.maxTokens }}</td>
                                             <td>{{ provider.apiKey }}</td>
                                             <td>
                                                 <button type="button" @click="removeVisionProvider(provider.name)"

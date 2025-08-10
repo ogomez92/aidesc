@@ -17,7 +17,6 @@ interface Emits {
     apiKey: string;
     model: string;
     baseURL?: string;
-    maxTokens: number;
   }): void;
 }
 
@@ -32,7 +31,6 @@ const newVisionProvider = ref({
   baseURL: '',
   apiKey: '',
   model: '',
-  maxTokens: 3000
 });
 
 // Get available model names from enums
@@ -49,7 +47,6 @@ const addVisionProvider = () => {
       baseURL: '',
       apiKey: '',
       model: '',
-      maxTokens: 3000
     };
   }
 };
@@ -98,13 +95,6 @@ watch(() => props.isVisible, (visible) => {
         <input id="vision-model" v-model="newVisionProvider.model" type="text" required class="form-input"
           placeholder="e.g., gpt-4o, gemini-2.0-flash" />
       </div>
-
-      <div class="form-group">
-        <label for="vision-tokens" class="form-label">{{ $t('setting_max_tokens') }}</label>
-        <input id="vision-tokens" v-model.number="newVisionProvider.maxTokens" type="number" min="1"
-          class="form-input" />
-      </div>
-      
       <div v-if="newVisionProvider.name === 'openailike'" class="form-group">
         <label for="base-url" class="form-label">{{ $t('setting_baseurl') }}</label>
         <textarea id="base-url" v-model="newVisionProvider.baseURL" type="text" class="form-input"
